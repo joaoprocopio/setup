@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "agentPushNotifEnabled": true,
+  "alwaysThinkingEnabled": true,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "autoContinueAtUsageLimit": false,
+  "autoMemoryEnabled": false,
+  "awaySummaryEnabled": false,
+  "diffTool": "terminal",
+  "disableArtifact": true,
+  "disableBundledSkills": true,
+  "disableClaudeAiConnectors": true,
+  "disableRemoteControl": true,
+  "disableWorkflows": true,
+  "editorMode": "normal",
+  "emojiCompletionEnabled": false,
+  "enableArtifact": false,
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "enableWorkflows": false,
+  "env": {
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+    "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false",
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "CLAUDE_CODE_NO_FLICKER": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DO_NOT_TRACK": "1",
+    "ENABLE_LSP_TOOL": "true",
+    "ENABLE_TOOL_SEARCH": "true"
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "repo": "anthropics/claude-plugins-official",
+        "source": "github"
+      }
+    }
+  },
+  "fastMode": false,
+  "includeGitInstructions": false,
+  "permissions": {
+    "defaultMode": "auto",
+    "deny": [
+      "DesignSync",
+      "RemoteTrigger",
+      "ReportFindings",
+      "NotebookEdit",
+      "ScheduleWakeup",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "Agent(claude)",
+      "Agent(Plan)",
+      "Agent(claude-code-guide)",
+      "Agent(statusline-setup)"
+    ]
+  },
+  "promptSuggestionEnabled": false,
+  "remoteControlAtStartup": false,
+  "showThinkingSummaries": false,
+  "showTurnDuration": false,
+  "spinnerTipsEnabled": false,
+  "statusLine": {
+    "command": "~/.claude/statusline.sh",
+    "refreshInterval": 30,
+    "type": "command"
+  },
+  "switchModelsOnFlag": false,
+  "theme": "auto",
+  "tui": "fullscreen",
+  "useAutoModeDuringPlan": true,
+  "viewMode": "focus",
+  "workflowKeywordTriggerEnabled": false
+}
