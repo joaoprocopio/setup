@@ -11,6 +11,5 @@ git config --global user.name joaoprocopio
 git config --global user.email joaovitorcprocopio@gmail.com
 git config --global init.defaultBranch main
 git config --global core.excludesfile ~/.gitignore
-git config --global core.editor "code --wait"
 git config --global core.autocrlf false
 git config --global push.autoSetupRemote true
