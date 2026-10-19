@@ -34,3 +34,10 @@ tar -xf "ghostty-$GHOSTTY_VERSION.tar.gz"
 
 cd "ghostty-$GHOSTTY_VERSION"
 "$WORK/$ZIG_DIR/zig" build -p "$HOME/.local" -Doptimize=ReleaseFast
+
+# Ghostty reads the GNOME light or dark preference and swaps the theme live,
+# so the terminal follows Settings > Appearance without a restart.
+mkdir -p "$HOME/.config/ghostty"
+rc_block "$HOME/.config/ghostty/config" <<'CONF'
+theme = light:Adwaita,dark:Adwaita Dark
+CONF
