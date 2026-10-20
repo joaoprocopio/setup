@@ -15,7 +15,22 @@ apt_install \
 GNOME_VERSION="$(gnome-shell --version | grep -o '[0-9]*' | head -1)"
 curl -fsSL "https://extensions.gnome.org/download-extension/quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip?shell_version=$GNOME_VERSION" -o "$WORK/qsap.zip"
 gnome-extensions install --force "$WORK/qsap.zip"
-dconf write /org/gnome/shell/extensions/quick-settings-audio-panel/always-show-input-volume-slider true
+# Só as chaves que diferem do default do schema da extensão
+QSAP=/org/gnome/shell/extensions/quick-settings-audio-panel
+dconf write $QSAP/panel-type "'merged-panel'"
+dconf write $QSAP/merged-panel-position "'top'"
+dconf write $QSAP/always-show-input-volume-slider true
+dconf write $QSAP/autohide-profile-switcher false
+dconf write $QSAP/create-applications-volume-sliders false
+dconf write $QSAP/widgets-order "[
+  'mpris-controllers',
+  'input-volume-slider',
+  'output-volume-slider',
+  'profile-switcher',
+  'perdevice-volume-sliders',
+  'balance-slider',
+  'applications-volume-sliders'
+]"
 
 # Desktop Icons NG e Tiling Assistant são as mesmas extensões que o Ubuntu liga por padrão
 # Escrito direto no gsettings pq o gnome-extensions só enxerga extensões novas depois de relogar
