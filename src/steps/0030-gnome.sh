@@ -10,6 +10,13 @@ apt_install \
   fonts-inter fonts-jetbrains-mono
 
 # Extensions
+# Quick Settings Audio Panel não tem pacote no Debian, então vem do extensions.gnome.org
+# Ela mostra o slider do microfone mesmo quando nenhum app usa o microfone
+GNOME_VERSION="$(gnome-shell --version | grep -o '[0-9]*' | head -1)"
+curl -fsSL "https://extensions.gnome.org/download-extension/quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip?shell_version=$GNOME_VERSION" -o "$WORK/qsap.zip"
+gnome-extensions install --force "$WORK/qsap.zip"
+dconf write /org/gnome/shell/extensions/quick-settings-audio-panel/always-show-input-volume-slider true
+
 # Desktop Icons NG e Tiling Assistant são as mesmas extensões que o Ubuntu liga por padrão
 # Escrito direto no gsettings pq o gnome-extensions só enxerga extensões novas depois de relogar
 gsettings set org.gnome.shell disable-user-extensions false
@@ -22,7 +29,8 @@ gsettings set org.gnome.shell enabled-extensions "[
   'drive-menu@gnome-shell-extensions.gcampax.github.com',
   'ding@rastersoft.com',
   'tiling-assistant@leleat-on-github',
-  'caffeine@patapon.info'
+  'caffeine@patapon.info',
+  'quick-settings-audio-panel@rayzeq.github.io'
 ]"
 note "saia da sessão e entre de novo para o GNOME carregar as extensões"
 
