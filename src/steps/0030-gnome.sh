@@ -23,13 +23,9 @@ dconf write $QSAP/always-show-input-volume-slider true
 dconf write $QSAP/autohide-profile-switcher false
 dconf write $QSAP/create-applications-volume-sliders false
 dconf write $QSAP/widgets-order "[
-  'mpris-controllers',
   'input-volume-slider',
   'output-volume-slider',
-  'profile-switcher',
-  'perdevice-volume-sliders',
-  'balance-slider',
-  'applications-volume-sliders'
+  'mpris-controllers'
 ]"
 
 # Desktop Icons NG e Tiling Assistant são as mesmas extensões que o Ubuntu liga por padrão
