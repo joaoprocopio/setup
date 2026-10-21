@@ -52,6 +52,7 @@
   "permissions": {
     "defaultMode": "auto",
     "deny": [
+      "AskUserQuestion",
       "DesignSync",
       "RemoteTrigger",
       "ReportFindings",
