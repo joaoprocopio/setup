@@ -52,19 +52,21 @@
   "permissions": {
     "defaultMode": "auto",
     "deny": [
+      "Agent(claude-code-guide)",
+      "Agent(claude)",
+      "Agent(Plan)",
+      "Agent(statusline-setup)",
       "AskUserQuestion",
-      "DesignSync",
-      "RemoteTrigger",
-      "ReportFindings",
-      "NotebookEdit",
-      "ScheduleWakeup",
       "CronCreate",
       "CronDelete",
       "CronList",
-      "Agent(claude)",
-      "Agent(Plan)",
-      "Agent(claude-code-guide)",
-      "Agent(statusline-setup)"
+      "DesignSync",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "NotebookEdit",
+      "RemoteTrigger",
+      "ReportFindings",
+      "ScheduleWakeup"
     ]
   },
   "promptSuggestionEnabled": false,
@@ -82,6 +84,8 @@
   "tui": "fullscreen",
   "useAutoModeDuringPlan": true,
   "viewMode": "focus",
-  "voice": { "enabled": true },
+  "voice": {
+    "enabled": true
+  },
   "workflowKeywordTriggerEnabled": false
 }
