@@ -59,8 +59,5 @@ rsync --checksum --itemize-changes "$WORK/settings.json" ~/.claude/settings.json
 
 rc_block ~/.zshrc <<'EOF'
 alias claude='command claude --system-prompt-file "$HOME/.claude/SYSTEM.md"'
-# btw joins its words into one prompt, so a question needs no quotes. noglob
-# stops zsh from reading the ? at the end of a question as a glob.
-_btw() { claude --model haiku --effort low -p "$*"; }
-alias btw='noglob _btw'
+alias haiku='claude --model haiku'
 EOF
