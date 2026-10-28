@@ -28,7 +28,7 @@ skills_add() {
 }
 
 skills_add mattpocock/skills \
-  code-review codebase-design diagnosing-bugs domain-modeling grill-me \
+  ask-matt code-review codebase-design diagnosing-bugs domain-modeling grill-me \
   grill-with-docs grilling handoff implement implement-spec \
   improve-codebase-architecture pr prototype research retro \
   setup-matt-pocock-skills tdd teach to-questionnaire to-spec to-tickets \
