@@ -22,10 +22,13 @@ dconf write $QSAP/merged-panel-position "'top'"
 dconf write $QSAP/always-show-input-volume-slider true
 dconf write $QSAP/autohide-profile-switcher false
 dconf write $QSAP/create-applications-volume-sliders false
+# Esta lista gera mídia, alto-falante e microfone, de cima para baixo.
+# A ordem da lista não é a da tela: com a posição 'top', a extensão insere
+# cada widget no índice 2 do grid, que nos sliders padrão é o do microfone.
 dconf write $QSAP/widgets-order "[
-  'input-volume-slider',
   'output-volume-slider',
-  'mpris-controllers'
+  'mpris-controllers',
+  'input-volume-slider'
 ]"
 
 # Desktop Icons NG e Tiling Assistant são as mesmas extensões que o Ubuntu liga por padrão
