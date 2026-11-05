@@ -70,6 +70,10 @@
   "showThinkingSummaries": false,
   "showTurnDuration": false,
   "spinnerTipsEnabled": false,
+  "spinnerVerbs": {
+    "mode": "replace",
+    "verbs": ["Working"]
+  },
   "statusLine": {
     "command": "~/.claude/statusline.sh",
     "refreshInterval": 30,
