@@ -12,7 +12,7 @@
   "awaySummaryEnabled": false,
   "diffTool": "terminal",
   "disableArtifact": true,
-  "disableBundledSkills": true,
+  "disableBundledSkills": false,
   "disableClaudeAiConnectors": true,
   "disableRemoteControl": true,
   "disableWorkflows": true,
@@ -57,16 +57,12 @@
       "Agent(Plan)",
       "Agent(statusline-setup)",
       "AskUserQuestion",
-      "CronCreate",
-      "CronDelete",
-      "CronList",
       "DesignSync",
       "EnterPlanMode",
       "ExitPlanMode",
       "NotebookEdit",
       "RemoteTrigger",
-      "ReportFindings",
-      "ScheduleWakeup"
+      "ReportFindings"
     ]
   },
   "promptSuggestionEnabled": false,
