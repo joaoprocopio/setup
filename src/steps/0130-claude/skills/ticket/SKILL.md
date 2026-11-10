@@ -13,10 +13,9 @@ The whole skill unfolds from one test, the **cold reader**: someone who joined n
 
 1. **Gather.** Collect the problem, the decisions, and the constraints from the conversation, linked tickets, and the code. Write in the language the project's tickets already use.
 2. **Type it.** Pick feature, bug, epic, or spike, and follow that type's shape under "Shape by type".
-3. **Size it.** If the criteria pile up "and also", the ticket is too big: split it first, per [`SPLITTING.md`](SPLITTING.md), then write each piece.
-4. **Draft** to the principles and the criteria rules.
-5. **Walk it in slow motion.** Trace the user from start to end and decide each edge case the walk exposes (see principle 3).
-6. **Reread** against "Reread checklist". Done when every item holds, or its gap is listed under **Open questions**.
+3. **Draft** to the principles and the criteria rules.
+4. **Walk it in slow motion.** Trace the user from start to end and decide each edge case the walk exposes (see principle 3).
+5. **Reread** against "Reread checklist". Done when every item holds, or its gap is listed under **Open questions**.
 
 Source every decision from the user or the context. A decision you cannot source is an open question: ask the user, or list it under **Open questions** in the ticket, so the gap stays visible instead of becoming a guess the implementer inherits.
 
@@ -90,7 +89,7 @@ and the guest list shows the resend date.
 
 A trivial criterion ("the button disappears after sending") reads fine as one direct sentence, held to the same discipline: observable and testable.
 
-The enumerated deliverables from principle 2 are raw material: each item needs its own criterion. Three to five criteria is a healthy card; well beyond that signals a card to split, and fewer while QA keeps bouncing it signals missing criteria.
+The enumerated deliverables from principle 2 are raw material: each item needs its own criterion.
 
 ## Titles
 
@@ -151,4 +150,3 @@ Its acceptance criterion is always the same: the question is answered and the re
 - Every link carries a sentence of context.
 - The latest refinement decisions are in the description.
 - The title stands alone on the board.
-- More than five criteria: consider splitting before detailing.
