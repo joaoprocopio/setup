@@ -95,8 +95,8 @@ The enumerated deliverables from principle 2 are raw material: each item needs i
 
 The title shows up on the board, in search, and in triage, so it stands alone:
 
-- **Feature or task**: a verb completing "This ticket will…": "Allow bulk resend of invites to non-responders", never "Invite resending".
-- **Bug**: the observable symptom plus the area, under 60 characters: "Attendance confirmation returns 500 when the invite has expired", never "Problem with confirmation". State the symptom, not the fix you suspect.
+- **Feature or task**: a verb completing "This ticket will...": "Allow bulk resend of invites to non-responders", never "Invite resending".
+- **Bug**: the observable symptom plus the area: "Attendance confirmation returns 500 when the invite has expired", never "Problem with confirmation". State the symptom, not the fix you suspect.
 
 ## Shape by type
 
