@@ -24,7 +24,8 @@ apt_install \
   ssh git blueprint-compiler rsync jq tree htop wget ripgrep curl ffmpeg net-tools ninja-build build-essential mesa-utils \
   libtool autoconf automake cmake gcc make unzip p7zip-full patch gettext \
   bison re2c byacc pkg-config libgraph-easy-perl tree-sitter-cli \
-  xsel xclip wl-clipboard linux-perf valgrind gnupg2 g++ ca-certificates
+  xsel xclip wl-clipboard linux-perf valgrind gnupg2 g++ ca-certificates \
+  webp imagemagick
 
 # gui tools
 apt_install \
