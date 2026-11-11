@@ -29,7 +29,7 @@ skills_add() {
 
 # Leaves out Matt's grilling, because mine in $ASSETS takes it.
 skills_add mattpocock/skills \
-  ask-matt chief-of-staff code-review codebase-design diagnosing-bugs \
+  ask-matt code-review codebase-design diagnosing-bugs \
   domain-modeling grill-me grill-with-docs handoff implement implement-spec \
   improve-codebase-architecture pr prototype research retro \
   setup-matt-pocock-skills tdd teach to-questionnaire to-spec to-tickets \
