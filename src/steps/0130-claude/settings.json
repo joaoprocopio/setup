@@ -66,5 +66,10 @@
   "tui": "fullscreen",
   "useAutoModeDuringPlan": true,
   "viewMode": "focus",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "voiceEnabled": true,
   "workflowKeywordTriggerEnabled": false
 }
