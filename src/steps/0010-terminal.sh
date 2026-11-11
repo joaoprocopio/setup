@@ -34,6 +34,13 @@ export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 eval "$(starship init zsh)"
 EOF
 
+# Every zsh reads ~/.zshenv, including the non-interactive `zsh -c` that
+# Claude Code's Bash tool runs. With NO_NOMATCH an unmatched glob such as
+# --include=*.py passes through as written instead of aborting the command.
+rc_block ~/.zshenv <<'EOF'
+setopt NO_NOMATCH
+EOF
+
 rc_block ~/.bashrc <<'EOF'
 export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 EOF
