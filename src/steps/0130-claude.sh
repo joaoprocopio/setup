@@ -29,11 +29,11 @@ skills_add() {
 
 # Leaves out Matt's grilling, because mine in $ASSETS takes it.
 skills_add mattpocock/skills \
-  ask-matt code-review codebase-design diagnosing-bugs domain-modeling grill-me \
-  grill-with-docs handoff implement implement-spec \
+  ask-matt chief-of-staff code-review codebase-design diagnosing-bugs \
+  domain-modeling grill-me grill-with-docs handoff implement implement-spec \
   improve-codebase-architecture pr prototype research retro \
   setup-matt-pocock-skills tdd teach to-questionnaire to-spec to-tickets \
-  triage wayfinder writing-for-agents
+  triage wait-what wayfinder writing-for-agents
 
 # Leaves out Emil's prototype, because mattpocock/skills takes that name.
 skills_add emilkowalski/skill apple-design
