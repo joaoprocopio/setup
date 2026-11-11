@@ -15,8 +15,6 @@ eval "$(jq -r '
     model:      (.model.id // .model.display_name),
     effort:     .effort.level,
     agent:      .agent.name,
-    wt:         (.worktree.name // .workspace.git_worktree),
-    wt_from:    .worktree.original_branch,
     start:      (.worktree.original_cwd // .workspace.project_dir),
     cwd:        (.workspace.current_dir // .cwd),
     ndirs:      (.workspace.added_dirs // [] | length),
@@ -85,11 +83,6 @@ m="$B${model:-?}$R"
 [[ -n $effort ]] && m+=" $MAG$effort$R"
 b1+=("$m")
 [[ -n $agent ]] && b1+=("$B${BLU}agent:$agent$R")
-if [[ -n $wt ]]; then
-  w="$B${YEL}wt:$wt$R"
-  [[ -n $wt_from ]] && w+=" ${D}from $wt_from$R"
-  b1+=("$w")
-fi
 join "${b1[@]}"
 block1=$REPLY
 
