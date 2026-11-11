@@ -48,6 +48,7 @@
       "ReportFindings"
     ]
   },
+  "prefersReducedMotion": true,
   "promptSuggestionEnabled": false,
   "remoteControlAtStartup": false,
   "showThinkingSummaries": false,
