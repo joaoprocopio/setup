@@ -2,14 +2,14 @@
 source "$(dirname "$0")/../lib.sh"
 
 # https://ghostty.org/docs/install/build
-# The tip release is the nightly build of main.
-GHOSTTY_URL="https://github.com/ghostty-org/ghostty/releases/download/tip/ghostty-source.tar.gz"
+GHOSTTY_VERSION="1.3.1"
 GHOSTTY_PUBLIC_KEY="RWQlAjJC23149WL2sEpT/l0QKy7hMIFhYdQOFy0Z7z7PbneUgvlsnYcV"
+GHOSTTY_DIR="ghostty-$GHOSTTY_VERSION"
 
 # Ghostty builds with exactly one Zig version, the minimum_zig_version in
-# main's build.zig.zon (0.17.0 today), so Zig exists only for this build and
+# its build.zig.zon (0.15.2 for 1.3.1), so Zig exists only for this build and
 # goes away with $WORK.
-ZIG_VERSION="0.17.0"
+ZIG_VERSION="0.15.2"
 ZIG_PUBLIC_KEY="RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U"
 ZIG_DIR="zig-x86_64-linux-$ZIG_VERSION"
 
@@ -32,18 +32,13 @@ cd "$WORK"
 fetch_signed "https://ziglang.org/download/$ZIG_VERSION/$ZIG_DIR.tar.xz" "$ZIG_PUBLIC_KEY"
 tar -xf "$ZIG_DIR.tar.xz"
 
-fetch_signed "$GHOSTTY_URL" "$GHOSTTY_PUBLIC_KEY"
-# The tarball's top folder names the commit (ghostty-1.4.1-main+e6076b3), so
-# the script strips it into a fixed folder.
-mkdir ghostty
-tar -xf ghostty-source.tar.gz -C ghostty --strip-components=1
+fetch_signed "https://release.files.ghostty.org/$GHOSTTY_VERSION/$GHOSTTY_DIR.tar.gz" "$GHOSTTY_PUBLIC_KEY"
+tar -xf "$GHOSTTY_DIR.tar.gz"
 
-cd ghostty
-# Without -Dinstalled-exe-path, the desktop file, D-Bus and systemd services
-# name a bare `ghostty`, which systemd only looks up in /usr/bin and
-# /usr/local/bin.
-"$WORK/$ZIG_DIR/zig" build -p "$HOME/.local" -Doptimize=ReleaseFast \
-  -Dinstalled-exe-path="$HOME/.local/bin/ghostty"
+cd "$GHOSTTY_DIR"
+# 1.3.1 writes $HOME/.local/bin/ghostty into the desktop file, D-Bus and
+# systemd services on its own, since it derives that path from -p.
+"$WORK/$ZIG_DIR/zig" build -p "$HOME/.local" -Doptimize=ReleaseFast
 
 # Ghostty reads the GNOME light or dark preference and swaps the theme live,
 # so the terminal follows Settings > Appearance without a restart.
