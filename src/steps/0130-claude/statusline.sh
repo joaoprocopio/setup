@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
-# Claude Code status line. Reads session JSON on stdin, prints 2 or 3 lines.
+# Claude Code status line. Reads session JSON on stdin, prints 1 to 3 lines.
 # Output is plain ASCII: glyphs render badly in some terminal fonts.
-# Budget: one jq fork, two git forks (status, diff --shortstat), the rest is bash builtins.
+# Budget: one jq fork, one git fork (status), the rest is bash builtins.
 # The PR lookup forks too, but in the background and at most every 120s.
 
 # No set -e: ((n++)) from 0 returns 1, and a non-zero exit blanks the status line.
-export LC_NUMERIC=C # printf %.2f must parse "1.23" under any locale
+shopt -s extglob # vislen strips escapes with *(...) patterns
 
 eval "$(jq -r '
   def v: if . == null then "" else tostring end;
   def pct: if type == "number" then round else null end;
   def int: if type == "number" then floor else null end;
   {
-    sid:        .session_id,
     model:      (.model.id // .model.display_name),
     effort:     .effort.level,
     think:      .thinking.enabled,
@@ -24,21 +23,13 @@ eval "$(jq -r '
     ndirs:      (.workspace.added_dirs // [] | length),
     host:       .workspace.repo.host,
     repo:       (.workspace.repo | if type == "object" and .name then [.host, .owner, .name] | map(select(. != null)) | join("/") else null end),
-    la:         (.cost.total_lines_added // 0),
-    lr:         (.cost.total_lines_removed // 0),
     ctx_pct:    (.context_window.used_percentage | pct),
     ctx_used:   (.context_window.total_input_tokens | int),
     ctx_size:   (.context_window.context_window_size | int),
     r5:         (.rate_limits.five_hour.used_percentage | pct),
     r5_at:      (.rate_limits.five_hour.resets_at | int),
     r7:         (.rate_limits.seven_day.used_percentage | pct),
-    r7_at:      (.rate_limits.seven_day.resets_at | int),
-    rs:         (.rate_limits.spend_limit.used_percentage | pct),
-    rs_at:      (.rate_limits.spend_limit.resets_at | int),
-    c_warm:     (if .prompt_cache.caching_observed == false then null else .prompt_cache.warm end),
-    c_exp:      (.prompt_cache.expires_at | int),
-    cost:       .cost.total_cost_usd,
-    dur_ms:     (.cost.total_duration_ms | int)
+    r7_at:      (.rate_limits.seven_day.resets_at | int)
   } | to_entries[] | "\(.key)=\(.value | v | @sh)"
 ' 2>/dev/null)"
 
@@ -70,6 +61,11 @@ fmt_tok() { # $1 = tokens -> 180k, 1M, 1.5M
   else REPLY=$n; fi
 }
 tilde() { if [[ $1 == "$HOME" || $1 == "$HOME"/* ]]; then REPLY="~${1#"$HOME"}"; else REPLY=$1; fi; }
+vislen() { # $1 = string -> printed width, ignoring SGR colors and OSC 8 links
+  local s=${1//$'\e]8;;'*([^$'\e'])$'\e\\'/}
+  s=${s//$'\e['*([0-9;])m/}
+  REPLY=${#s}
+}
 join() { # joins "$@" with SEP into REPLY
   local out="" x
   for x in "$@"; do [[ -n $x ]] && out+="${out:+$SEP}$x"; done
@@ -83,36 +79,38 @@ limit() { # $1 label, $2 pct, $3 resets_at
   else REPLY="$1 $c$2%$R"; fi
 }
 
-# Line 1: model and modes
-l1=()
-l1+=("$B${model:-?}$R")
-[[ -n $effort ]] && l1+=("$MAG$effort$R")
+# Block 1: model and modes
+b1=()
+model=${model#claude-}
+m="$B${model:-?}$R"
+[[ -n $effort ]] && m+=" $MAG$effort$R"
 case $think in
-  true)  l1+=("${CYN}think$R") ;;
-  false) l1+=("${D}no-think$R") ;;
+  true)  m+=" ${CYN}think$R" ;;
+  false) m+=" ${D}no-think$R" ;;
 esac
-[[ -n $sid ]] && l1+=("${D}session:$sid$R")
-join "${l1[@]}"
-line1=$REPLY
-[[ -n $agent ]] && line1+="  $B${BLU}agent:$agent$R"
+b1+=("$m")
+[[ -n $agent ]] && b1+=("$B${BLU}agent:$agent$R")
 if [[ -n $wt ]]; then
-  line1+="  $B${YEL}wt:$wt$R"
-  [[ -n $wt_from ]] && line1+=" ${D}from $wt_from$R"
+  w="$B${YEL}wt:$wt$R"
+  [[ -n $wt_from ]] && w+=" ${D}from $wt_from$R"
+  b1+=("$w")
 fi
+join "${b1[@]}"
+block1=$REPLY
 
-# Line 2: location, git, lines
-l2=()
-[[ -n $repo ]] && l2+=("$B$repo$R")
-
+# Block 2: where the session started, where the agent is now, and git.
+# The current directory is yellow, so a cd away from the start stands out.
+b2=()
 tilde "${start:-${cwd:-$PWD}}"
+[[ $REPLY == "~" ]] || REPLY=${REPLY##*/}
 loc="$BLU$REPLY$R"
 if [[ -n $cwd && -n $start && $cwd != "$start" ]]; then
-  if [[ $cwd == "$start"/* ]]; then loc+=" $D->$R $CYN${cwd#"$start"/}/$R"
-  else tilde "$cwd"; loc+=" $D->$R $CYN$REPLY$R"; fi
+  if [[ $cwd == "$start"/* ]]; then loc+=" $D->$R $YEL${cwd#"$start"/}/$R"
+  else tilde "$cwd"; loc+=" $D->$R $YEL$REPLY$R"; fi
 fi
 if (( ndirs == 1 )); then loc+=" $D+1 dir$R"
 elif (( ndirs > 1 )); then loc+=" $D+$ndirs dirs$R"; fi
-l2+=("$loc")
+b2+=("$loc")
 
 if [[ -n $cwd ]] && gs=$(git -C "$cwd" --no-optional-locks status --porcelain=v2 --branch 2>/dev/null); then
   head="" oid="" ahead=0 behind=0 st=0 md=0 un=0 cf=0
@@ -130,14 +128,14 @@ if [[ -n $cwd ]] && gs=$(git -C "$cwd" --no-optional-locks status --porcelain=v2
     esac
   done <<< "$gs"
   [[ $head == "(detached)" ]] && head="@${oid:0:7}"
-  g="${GRN}git:$head$R"
+  g="$GRN$head$R"
   (( st )) && g+=" ${GRN}staged:$st$R"
   (( md )) && g+=" ${YEL}mod:$md$R"
   (( un )) && g+=" ${D}new:$un$R"
   (( cf )) && g+=" ${RED}conflict:$cf$R"
   (( ahead )) && g+=" ${CYN}ahead:$ahead$R"
   (( behind )) && g+=" ${CYN}behind:$behind$R"
-  l2+=("$g")
+  b2+=("$g")
 
   # The branch's open PR, from the provider script named after the remote
   # host. Forge APIs take seconds, so the answer is cached per repo and
@@ -162,64 +160,57 @@ if [[ -n $cwd ]] && gs=$(git -C "$cwd" --no-optional-locks status --porcelain=v2
       disown
     fi
   fi
-
-  # Committed size of the branch against the PR's target, or the default
-  # branch without a PR, as the PR would show it.
-  base=origin/HEAD
-  [[ -n $pr_dest ]] && git -C "$cwd" rev-parse -q --verify "origin/$pr_dest" >/dev/null && base=origin/$pr_dest
-  ss=$(git -C "$cwd" --no-optional-locks diff --shortstat "$base...HEAD" 2>/dev/null)
-  b=""
   if [[ -n $pr_id ]]; then
     # OSC 8 makes the badge a link in terminals that support it.
     pr="PR #$pr_id"
     [[ -n $pr_url ]] && pr="$E]8;;$pr_url$E\\$pr$E]8;;$E\\"
-    if [[ $pr_draft == true ]]; then b="$D$pr draft$R"; else b="$B$MAG$pr$R"; fi
-    b+=" $D->$R $pr_dest"
-    [[ $base == origin/HEAD ]] && b+=" $D(vs origin/HEAD)$R"
+    if [[ $pr_draft == true ]]; then p="$D$pr draft$R"; else p="$B$MAG$pr$R"; fi
+    b2+=("$p $D->$R $pr_dest")
   fi
-  if [[ $ss =~ ([0-9]+)\ file ]]; then
-    if [[ -n $b ]]; then b+=": "; else b="branch: "; fi
-    b+="${BASH_REMATCH[1]} files"
-    [[ $ss =~ ([0-9]+)\ insertion ]] && b+=" $GRN+${BASH_REMATCH[1]}$R"
-    [[ $ss =~ ([0-9]+)\ deletion ]] && b+=" $RED-${BASH_REMATCH[1]}$R"
-  fi
-  [[ -n $b ]] && l2+=("$b")
 fi
+join "${b2[@]}"
+block2=$REPLY
 
-l2+=("$GRN+${la:-0}$R $RED-${lr:-0}$R")
-join "${l2[@]}"
-line2=$REPLY
-
-# Line 3: context, limits, cache, cost
-l3=()
+# Block 3: context and rate limits
+b3=()
 if [[ -n $ctx_size ]]; then
   fmt_tok "$ctx_size"; size=$REPLY
   if [[ -n $ctx_pct ]]; then
     color_pct "$ctx_pct"; c=$REPLY
-    fill=$(( (ctx_pct + 5) / 10 )); (( fill > 10 )) && fill=10
-    bar="["
-    for ((i = 0; i < 10; i++)); do (( i < fill )) && bar+="#" || bar+="-"; done
-    bar+="]"
     fmt_tok "${ctx_used:-0}"
-    l3+=("ctx $c$bar $ctx_pct%$R $REPLY/$size")
+    b3+=("ctx $c$ctx_pct%$R $REPLY/$size")
   else
-    l3+=("ctx $D-/$size$R")
+    b3+=("ctx $D-/$size$R")
   fi
 fi
-limit 5h "$r5" "$r5_at"; l3+=("$REPLY")
-limit 7d "$r7" "$r7_at"; l3+=("$REPLY")
-limit spend "$rs" "$rs_at"; l3+=("$REPLY")
-case $c_warm in
-  true)
-    if [[ -n $c_exp ]]; then fmt_secs $((c_exp - now)); l3+=("${GRN}cache warm$R $D$REPLY$R")
-    else l3+=("${GRN}cache warm$R"); fi ;;
-  false) l3+=("${YEL}cache cold$R") ;;
-esac
-[[ -n $cost ]] && { printf -v c '$%.2f' "$cost"; l3+=("$c"); }
-[[ -n $dur_ms ]] && { fmt_secs $((dur_ms / 1000)); l3+=("$D$REPLY$R"); }
-join "${l3[@]}"
-line3=$REPLY
+limit 5h "$r5" "$r5_at"; b3+=("$REPLY")
+limit 7d "$r7" "$r7_at"; b3+=("$REPLY")
+join "${b3[@]}"
+block3=$REPLY
 
-printf '%s\n' "$line1" "$line2"
-[[ -n $line3 ]] && printf '%s\n' "$line3"
+# Layout: blocks 1 and 2 share a line when they fit, and block 3 sits flush
+# right on the last line, or on its own line when it does not fit there.
+# Claude Code indents the status line by 2 columns, and the rest of the
+# margin keeps a line at full width from wrapping. A block never splits.
+width=$(( ${COLUMNS:-0} - 4 ))
+lines=()
+vislen "$block1"; n1=$REPLY
+vislen "$block2"; n2=$REPLY
+if (( n1 + 3 + n2 <= width )); then lines+=("$block1$SEP$block2")
+else lines+=("$block1" "$block2"); fi
+if [[ -n $block3 ]]; then
+  vislen "$block3"; n3=$REPLY
+  last=${lines[-1]}
+  vislen "$last"; nl=$REPLY
+  if (( nl + 3 + n3 <= width )); then
+    printf -v pad '%*s' $(( width - nl - n3 )) ''
+    lines[-1]="$last$pad$block3"
+  else
+    pad=""
+    (( n3 < width )) && printf -v pad '%*s' $(( width - n3 )) ''
+    lines+=("$pad$block3")
+  fi
+fi
+
+printf '%s\n' "${lines[@]}"
 exit 0
