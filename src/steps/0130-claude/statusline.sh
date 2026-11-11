@@ -14,7 +14,6 @@ eval "$(jq -r '
   {
     model:      (.model.id // .model.display_name),
     effort:     .effort.level,
-    think:      .thinking.enabled,
     agent:      .agent.name,
     wt:         (.worktree.name // .workspace.git_worktree),
     wt_from:    .worktree.original_branch,
@@ -84,10 +83,6 @@ b1=()
 model=${model#claude-}
 m="$B${model:-?}$R"
 [[ -n $effort ]] && m+=" $MAG$effort$R"
-case $think in
-  true)  m+=" ${CYN}think$R" ;;
-  false) m+=" ${D}no-think$R" ;;
-esac
 b1+=("$m")
 [[ -n $agent ]] && b1+=("$B${BLU}agent:$agent$R")
 if [[ -n $wt ]]; then
