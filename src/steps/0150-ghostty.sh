@@ -2,17 +2,19 @@
 source "$(dirname "$0")/../lib.sh"
 
 # https://ghostty.org/docs/install/build
-GHOSTTY_VERSION="1.4.0"
+# The tip release is the nightly build of main.
+GHOSTTY_URL="https://github.com/ghostty-org/ghostty/releases/download/tip/ghostty-source.tar.gz"
 GHOSTTY_PUBLIC_KEY="RWQlAjJC23149WL2sEpT/l0QKy7hMIFhYdQOFy0Z7z7PbneUgvlsnYcV"
 
-# Each Ghostty release builds with exactly one Zig version (1.4.x needs
-# 0.17.0), so Zig exists only for this build and goes away with $WORK.
+# Ghostty builds with exactly one Zig version, the minimum_zig_version in
+# main's build.zig.zon (0.17.0 today), so Zig exists only for this build and
+# goes away with $WORK.
 ZIG_VERSION="0.17.0"
 ZIG_PUBLIC_KEY="RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U"
 ZIG_DIR="zig-x86_64-linux-$ZIG_VERSION"
 
 # https://ghostty.org/docs/install/build#debian-and-ubuntu
-# 1.4 also links the system EGL (pkg-config egl), which libegl-dev provides.
+# Ghostty also links the system EGL (pkg-config egl), which libegl-dev provides.
 apt_install minisign \
   libgtk-4-dev libgtk4-layer-shell-dev libadwaita-1-dev libegl-dev gettext libxml2-utils blueprint-compiler
 
@@ -30,10 +32,13 @@ cd "$WORK"
 fetch_signed "https://ziglang.org/download/$ZIG_VERSION/$ZIG_DIR.tar.xz" "$ZIG_PUBLIC_KEY"
 tar -xf "$ZIG_DIR.tar.xz"
 
-fetch_signed "https://release.files.ghostty.org/$GHOSTTY_VERSION/ghostty-$GHOSTTY_VERSION.tar.gz" "$GHOSTTY_PUBLIC_KEY"
-tar -xf "ghostty-$GHOSTTY_VERSION.tar.gz"
+fetch_signed "$GHOSTTY_URL" "$GHOSTTY_PUBLIC_KEY"
+# The tarball's top folder names the commit (ghostty-1.4.1-main+e6076b3), so
+# the script strips it into a fixed folder.
+mkdir ghostty
+tar -xf ghostty-source.tar.gz -C ghostty --strip-components=1
 
-cd "ghostty-$GHOSTTY_VERSION"
+cd ghostty
 # Without -Dinstalled-exe-path, the desktop file, D-Bus and systemd services
 # name a bare `ghostty`, which systemd only looks up in /usr/bin and
 # /usr/local/bin.
