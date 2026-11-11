@@ -2,18 +2,19 @@
 source "$(dirname "$0")/../lib.sh"
 
 # https://ghostty.org/docs/install/build
-GHOSTTY_VERSION="1.3.1"
+GHOSTTY_VERSION="1.4.0"
 GHOSTTY_PUBLIC_KEY="RWQlAjJC23149WL2sEpT/l0QKy7hMIFhYdQOFy0Z7z7PbneUgvlsnYcV"
 
-# Each Ghostty release builds with exactly one Zig version (1.3.x needs
-# 0.15.2), so Zig exists only for this build and goes away with $WORK.
-ZIG_VERSION="0.15.2"
+# Each Ghostty release builds with exactly one Zig version (1.4.x needs
+# 0.17.0), so Zig exists only for this build and goes away with $WORK.
+ZIG_VERSION="0.17.0"
 ZIG_PUBLIC_KEY="RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U"
 ZIG_DIR="zig-x86_64-linux-$ZIG_VERSION"
 
 # https://ghostty.org/docs/install/build#debian-and-ubuntu
+# 1.4 also links the system EGL (pkg-config egl), which libegl-dev provides.
 apt_install minisign \
-  libgtk-4-dev libgtk4-layer-shell-dev libadwaita-1-dev gettext libxml2-utils blueprint-compiler
+  libgtk-4-dev libgtk4-layer-shell-dev libadwaita-1-dev libegl-dev gettext libxml2-utils blueprint-compiler
 
 # Downloads <url> and its .minisig into the current directory, then checks
 # the signature against <public-key>.
@@ -33,7 +34,11 @@ fetch_signed "https://release.files.ghostty.org/$GHOSTTY_VERSION/ghostty-$GHOSTT
 tar -xf "ghostty-$GHOSTTY_VERSION.tar.gz"
 
 cd "ghostty-$GHOSTTY_VERSION"
-"$WORK/$ZIG_DIR/zig" build -p "$HOME/.local" -Doptimize=ReleaseFast
+# Without -Dinstalled-exe-path, the desktop file, D-Bus and systemd services
+# name a bare `ghostty`, which systemd only looks up in /usr/bin and
+# /usr/local/bin.
+"$WORK/$ZIG_DIR/zig" build -p "$HOME/.local" -Doptimize=ReleaseFast \
+  -Dinstalled-exe-path="$HOME/.local/bin/ghostty"
 
 # Ghostty reads the GNOME light or dark preference and swaps the theme live,
 # so the terminal follows Settings > Appearance without a restart.
