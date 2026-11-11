@@ -10,18 +10,12 @@
   "autoContinueAtUsageLimit": false,
   "autoMemoryEnabled": false,
   "awaySummaryEnabled": false,
-  "diffTool": "terminal",
   "disableBundledSkills": false,
   "disableClaudeAiConnectors": true,
   "disableRemoteControl": true,
   "disableWorkflows": true,
   "editorMode": "normal",
   "emojiCompletionEnabled": false,
-  "enabledPlugins": {
-    "pyright-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  },
   "enableWorkflows": false,
   "env": {
     "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
@@ -29,20 +23,11 @@
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false",
     "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "CLAUDE_CODE_NO_FLICKER": "1",
     "DISABLE_ERROR_REPORTING": "1",
     "DISABLE_FEEDBACK_COMMAND": "1",
     "DISABLE_TELEMETRY": "1",
-    "DO_NOT_TRACK": "1",
-    "ENABLE_LSP_TOOL": "true",
-    "ENABLE_TOOL_SEARCH": "true"
-  },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "repo": "anthropics/claude-plugins-official",
-        "source": "github"
-      }
-    }
+    "DO_NOT_TRACK": "1"
   },
   "fastMode": false,
   "includeGitInstructions": false,
@@ -77,11 +62,8 @@
     "type": "command"
   },
   "switchModelsOnFlag": false,
-  "theme": "auto",
+  "tui": "fullscreen",
   "useAutoModeDuringPlan": true,
   "viewMode": "focus",
-  "voice": {
-    "enabled": true
-  },
   "workflowKeywordTriggerEnabled": false
 }
