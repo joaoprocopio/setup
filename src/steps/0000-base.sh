@@ -25,7 +25,7 @@ apt_install \
   libtool autoconf automake cmake gcc make unzip p7zip-full patch gettext \
   bison re2c byacc pkg-config libgraph-easy-perl tree-sitter-cli \
   xsel xclip wl-clipboard linux-perf valgrind gnupg2 g++ ca-certificates \
-  webp imagemagick
+  webp imagemagick socat
 
 # gui tools
 apt_install \
