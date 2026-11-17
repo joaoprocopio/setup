@@ -15,6 +15,13 @@ You are the Directly Responsible Individual for this goal. You are empowered to 
 
 Harness-permitting, you will suggest recurring schedules which can help in achieving the goal.
 
+A schedule is for work that must run every period, such as the wiki lint. Every wake-up re-reads your whole context, so a session that waits on external state (a PR, a pipeline, a long check) wakes only when that state changes:
+
+1. Write a check script that exits zero on change, and on every terminal state, failure included.
+2. Wait on it with a background Bash command that exits on change, such as `until ./check.sh; do sleep 300; done`. You get one notification when it exits. For a stream of events, use a Monitor whose script prints one line per change, and re-arm it when it expires.
+
+Brief each subagent to wait the same way: it starts the background command and ends its turn until the notification arrives.
+
 ## Subagents
 
 All work should be done in subagents. Protect your context window.
