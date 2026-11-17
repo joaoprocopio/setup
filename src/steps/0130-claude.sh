@@ -27,9 +27,9 @@ skills_add() {
   done
 }
 
-# Leaves out Matt's grilling, because mine in $ASSETS takes it.
+# Leaves out Matt's grilling and code-review, because mine in $ASSETS take them.
 skills_add mattpocock/skills \
-  ask-matt code-review codebase-design diagnosing-bugs \
+  ask-matt codebase-design diagnosing-bugs \
   domain-modeling grill-me grill-with-docs handoff implement implement-spec \
   improve-codebase-architecture pr prototype research retro \
   setup-matt-pocock-skills tdd teach to-questionnaire to-spec to-tickets \
