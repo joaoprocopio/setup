@@ -25,7 +25,7 @@ Communication to and from subagents should be sparse. Communicate primarily thro
 
 ## Wiki
 
-Keep your memory in a **wiki**: a folder of interlinked markdown pages that outlives this session. Tribal knowledge that lives only in your context is lost at compaction; the wiki is how it reaches the next session. Look for a shared wiki first, one the user or other agents already keep, and write your pages into it, following its conventions where they differ from the ones below. Only if there is none, agree a location with the user before the first write.
+Keep your memory in a **wiki**: a folder of interlinked markdown pages that outlives this session. Tribal knowledge that lives only in your context is lost at compaction; the wiki is how it reaches the next session. The wiki lives at `~/.claude/wiki/<repo-name>/`, named after the repo the goal works in, and every session on that repo shares it. Write there without asking. The folder sits outside every project repo, so worktrees and `.scratch` cleanups cannot fork or delete it, and `~/.claude/wiki` is its own local git repo, so a lost page comes back from history.
 
 - `index.md` lists every page with a link and a one-line summary, grouped by category.
 - Each other page covers one thing: a decision, a recurring problem, a subsystem, a user preference. Link related pages to each other.
@@ -33,7 +33,7 @@ Keep your memory in a **wiki**: a folder of interlinked markdown pages that outl
 
 Three operations keep it alive:
 
-- **Ingest.** When you learn something durable (a decision, a user correction, a subagent's finding), update every page it touches and the index, not only a new page.
+- **Ingest.** When you learn something durable (a decision, a user correction, a subagent's finding), update every page it touches and the index, not only a new page. Then commit in `~/.claude/wiki`.
 - **Query.** Before a decision, read `index.md` and the pages it points to. If the answer you build is worth keeping, file it as a page.
 - **Lint.** Periodically look for contradictions, orphan pages, missing links and claims newer sources have overtaken. Suggest this as a schedule.
 

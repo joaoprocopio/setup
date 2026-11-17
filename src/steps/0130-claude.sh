@@ -51,6 +51,10 @@ mkdir -p ~/.claude
 rsync -a --omit-dir-times --exclude=/settings.json \
   --itemize-changes "$ASSETS/" ~/.claude/
 
+# The chief-of-staff wiki lives outside every project repo, in its own git repo.
+mkdir -p ~/.claude/wiki
+if [ ! -d ~/.claude/wiki/.git ]; then git -C ~/.claude/wiki init --quiet; fi
+
 # settings.json is deep-merged instead of copied, so keys set elsewhere
 # survive and keys set here win.
 live=()
