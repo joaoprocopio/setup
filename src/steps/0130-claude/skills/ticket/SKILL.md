@@ -34,7 +34,7 @@ Feature or task:
 
 ## Acceptance criteria
 
-- [ ] <one behaviour QA can observe>
+- <one behaviour QA can observe>
 
 ## How to test
 
@@ -104,8 +104,8 @@ One line per item: the case and the decision, or the excluded item. The reasonin
 Each criterion is one behaviour QA can see on screen and mark pass or fail alone. Write it in the words of the screen, with the precondition when one matters. When a behaviour cannot be reproduced in the test environment, say so on the criterion and name who verifies it and how.
 
 ```text
-Good: - [ ] With a guest who has not replied, Resend shows "Invite resent" and the guest list shows today's date.
-Bad:  - [ ] POST /resend with only_pending=on returns 200, sets resent_at, and logs the batch.
+Good: - With a guest who has not replied, Resend shows "Invite resent" and the guest list shows today's date.
+Bad:  - POST /resend with only_pending=on returns 200, sets resent_at, and logs the batch.
 ```
 
 The bad one names a field, an endpoint, and a log; QA cannot reach any of them, and it checks three things at once.
