@@ -71,6 +71,9 @@ gsettings set org.gnome.desktop.wm.preferences titlebar-font "Inter Bold 11"
 # Tweaks > Windows > Titlebar Buttons > Maximize + Minimize
 gsettings set org.gnome.desktop.wm.preferences button-layout "appmenu:minimize,maximize,close"
 
+# Touchpad > Disable Touchpad While Typing desligado
+gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false
+
 # Compose Key no Right Alt
 gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
 
