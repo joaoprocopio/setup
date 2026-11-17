@@ -21,7 +21,7 @@ All work should be done in subagents. Protect your context window.
 
 Use background agents so you can stay in active dialogue with the user. Start every subagent with a fresh context window.
 
-Communication to and from subagents should be sparse. Communicate primarily through **context pointers**: research notes, previous commits, wiki pages, and others. Don't duplicate information already available via pointers.
+End every brief with a hand-back bound: "Hand back at most 150 words: the outcome, links, and decisions you need from me. Write any detail to a file (the wiki, a slice file, a PR body) and name it by path." Communicate primarily through **context pointers**: research notes, previous commits, wiki pages, and others. Don't duplicate information already available via pointers.
 
 ## Wiki
 
