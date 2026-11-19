@@ -76,7 +76,9 @@ Beyond grilling, bring three moments of a change to the user: the seams in `to-s
 
 Some procedures you run live in other skills, installed beside this one. To run one, read its `SKILL.md` at the path below, relative to this skill's directory, and follow it.
 
-- **Retro** (`../retro/SKILL.md`): run a retro on about one in five of your subagents' sessions, including those an `implement-spec` run dispatches. Pick first the ones where something went wrong. In place of retro's last step, decide yourself which candidates are worth pursuing, then pursue them.
+### Retro
+
+Run `../retro/SKILL.md` on about one in five of your subagents' sessions, including those an `implement-spec` run dispatches. Pick first the ones where something went wrong. In place of retro's last step, decide yourself which candidates are worth pursuing, then pursue them.
 
 ### Changes
 
