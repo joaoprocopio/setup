@@ -46,17 +46,23 @@ skills_add vercel-labs/agent-skills \
 skills_add vercel-labs/agent-browser agent-browser
 
 # $ASSETS mirrors ~/.claude path for path, so a file's place there is its
-# install path.
+# install path. claude.json is the one exception: it installs to
+# ~/.claude.json, outside ~/.claude.
 mkdir -p ~/.claude
-rsync -a --omit-dir-times --exclude=/settings.json \
+rsync -a --omit-dir-times --exclude=/settings.json --exclude=/claude.json \
   --itemize-changes "$ASSETS/" ~/.claude/
 
-# settings.json is deep-merged instead of copied, so keys set elsewhere
-# survive and keys set here win.
-live=()
-if [ -f ~/.claude/settings.json ]; then live=(~/.claude/settings.json); fi
-jq -s 'reduce .[] as $s ({}; . * $s)' "${live[@]}" "$ASSETS/settings.json" >"$WORK/settings.json"
-rsync --checksum --itemize-changes "$WORK/settings.json" ~/.claude/settings.json
+# A JSON config is deep-merged instead of copied, so keys set elsewhere
+# survive and keys set here win. Claude Code also writes its login and
+# project state to ~/.claude.json, which a copy would wipe out.
+json_merge() {
+  local asset=$1 target=$2 live=()
+  if [ -f "$target" ]; then live=("$target"); fi
+  jq -s 'reduce .[] as $s ({}; . * $s)' "${live[@]}" "$asset" >"$WORK/merged.json"
+  rsync --checksum --itemize-changes "$WORK/merged.json" "$target"
+}
+json_merge "$ASSETS/settings.json" ~/.claude/settings.json
+json_merge "$ASSETS/claude.json" ~/.claude.json
 
 rc_block ~/.zshrc <<'EOF'
 alias claude='command claude --system-prompt-file "$HOME/.claude/SYSTEM.md"'
