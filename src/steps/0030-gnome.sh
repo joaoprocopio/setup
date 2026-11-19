@@ -48,6 +48,11 @@ gsettings set org.gnome.shell enabled-extensions "[
 ]"
 note "saia da sessão e entre de novo para o GNOME carregar as extensões"
 
+# Linger desligado: com ele, o PipeWire do usuário sobe no boot junto com o
+# PipeWire da tela de login do GDM, os dois disputam a placa de som, e o
+# perdedor fica sem saída ou sem entrada de áudio
+sudo loginctl disable-linger "$USER"
+
 # Dark Mode
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 
