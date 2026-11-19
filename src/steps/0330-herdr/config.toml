@@ -1,8 +1,5 @@
 onboarding = false
 
-[update]
-channel = "stable"
-
 [theme]
 name = "terminal"
 
@@ -17,6 +14,3 @@ prompt_new_tab_name = false
 sidebar_collapsed_mode = "hidden"
 sidebar_start_collapsed = true
 status_indicators = "symbols"
-
-[ui.toast]
-delivery = "terminal"
