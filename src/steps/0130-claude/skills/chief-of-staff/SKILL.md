@@ -19,6 +19,8 @@ Harness-permitting, you will suggest recurring schedules which can help in achie
 
 All work should be done in subagents. Protect your context window.
 
+Three kinds of work stay in your own session, because a subagent can neither talk to the user nor dispatch subagents of its own: [grilling](#grilling), writing a change's spec and tickets, and co-ordinating an `implement-spec` run.
+
 Use background agents so you can stay in active dialogue with the user. Start every subagent with a fresh context window.
 
 End every brief with a hand-back bound: "Hand back at most 150 words: the outcome, links, and decisions you need from me. Write any detail to a file (the wiki, a slice file, a PR body) and name it by path." Communicate primarily through **context pointers**: research notes, previous commits, wiki pages, and others. Don't duplicate information already available via pointers.
@@ -58,12 +60,35 @@ Keep it on a wiki page, `destination.md`, your map at low resolution. Read it be
 
 The **frontier** is the work takeable now that moves toward the destination. Choose the next task from it.
 
+## Grilling
+
+Grilling is a live exchange in which the user settles the decisions only they can make. It is **HITL**: the user speaks for themselves, so put each question to them and wait for their answer. Run it in your own session, and call the Skill tool twice, for "grilling" and "domain-modeling", so the domain model stays current as decisions land.
+
+Grill when:
+
+- you name the destination, or redraw it;
+- a request carries open decisions, before you write its spec;
+- a subagent hands back a decision only the user can make.
+
+Beyond grilling, bring three moments of a change to the user: the seams in `to-spec`, the ticket breakdown in `to-tickets`, and the PR once it is ready for review. Between those moments, keep working and report.
+
 ## Procedures
 
 Some procedures you run live in other skills, installed beside this one. To run one, read its `SKILL.md` at the path below, relative to this skill's directory, and follow it.
 
-- **Retro** (`../retro/SKILL.md`): run a retro on about one in five of your subagents' sessions, including those an `implement-spec` run dispatches. Pick first the ones where something went wrong. In place of retro's last step, decide yourself which candidates are worth pursuing, then pursue them.
-- **Large chunks of work**: write a spec with `../to-spec/SKILL.md`, break it into tickets with `../to-tickets/SKILL.md`, publish both to the issue tracker, then implement them with `../implement-spec/SKILL.md`.
+### Retro
+
+Run `../retro/SKILL.md` on about one in five of your subagents' sessions, including those an `implement-spec` run dispatches. Pick first the ones where something went wrong. In place of retro's last step, decide yourself which candidates are worth pursuing, then pursue them.
+
+### Changes
+
+Every change, whatever its size, takes one flow: spec, tickets, then `implement-spec`. The repo decides what counts as a change and how it reaches review, in the change flow of its `AGENTS.md` or `CLAUDE.md`. Where that change flow conflicts with `implement-spec`, the repo's change flow wins.
+
+1. **Grill** the request's open decisions, if it has any.
+2. **Explore.** Dispatch an exploration subagent that saves its notes to a file outside the repo. Read the notes in place of the codebase: they stand in for `to-spec`'s exploration step.
+3. **Spec.** Run `../to-spec/SKILL.md` yourself, since the grilling already sits in your context. Size the user-story list to the change, in place of `to-spec`'s long list: a one-line fix earns one or two stories. Confirm the seams with the user.
+4. **Tickets.** Run `../to-tickets/SKILL.md` yourself. Choose the ticket count, one ticket included, and get the user's approval of the breakdown.
+5. **Implement.** Run `../implement-spec/SKILL.md` from your own session, so its implementer subagents and its `code-review` can dispatch subagents. Bring the user the PR once it is ready for review.
 
 ## Strategic View
 
