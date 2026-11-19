@@ -2,10 +2,14 @@ onboarding = false
 
 [theme]
 name = "terminal"
+auto_switch = true
+
+[update]
+channel = "stable"
 
 [ui]
+accent = "gray"
 copy_on_select = false
-hide_tab_bar_when_single_tab = true
 host_cursor = "native"
 pane_gaps = false
 pane_outer_borders = false
@@ -14,3 +18,10 @@ prompt_new_tab_name = false
 sidebar_collapsed_mode = "hidden"
 sidebar_start_collapsed = true
 status_indicators = "symbols"
+tab_bar_position = "bottom"
+
+[ui.toast]
+delivery = "system"
+
+[ui.sound]
+enabled = false
