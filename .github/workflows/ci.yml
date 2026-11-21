@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: bash -n
+        run: find src test -name '*.sh' -print0 | xargs -0 -n1 bash -n
+      - name: shellcheck
+        run: >-
+          docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.11.0
+          src/install.sh src/lib.sh src/steps/*.sh src/snippets/*.sh test/*.sh
+
+  two-accounts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: install.sh as admin and as a no-sudo account
+        run: docker run --rm -v "$PWD:/repo:ro" debian:trixie bash /repo/test/two-accounts.sh
