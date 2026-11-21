@@ -26,7 +26,9 @@
     "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "DISABLE_ERROR_REPORTING": "1",
-    "DISABLE_FEEDBACK_COMMAND": "1"
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DO_NOT_TRACK": "1"
   },
   "fastMode": false,
   "includeGitInstructions": false,
