@@ -29,7 +29,9 @@ fi
 # The name drops the NNNN- prefix, so renumbering a step keeps its rc_block markers.
 STEP="$(basename "$0" .sh)"
 STEP="${STEP#[0-9][0-9][0-9][0-9]-}"
+# shellcheck disable=SC2034 # Steps read ASSETS.
 ASSETS="$(cd "$(dirname "$0")" && pwd)/$(basename "$0" .sh)"
+# shellcheck disable=SC2034 source=/dev/null # Steps read CODENAME.
 CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 
 # Installers that find ~/.local/bin on PATH leave the shell profiles alone.

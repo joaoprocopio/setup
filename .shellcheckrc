@@ -1,0 +1,4 @@
+# lib.sh has no shebang, and steps source it as "$(dirname "$0")/../lib.sh".
+shell=bash
+source-path=SCRIPTDIR
+external-sources=true
