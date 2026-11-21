@@ -22,4 +22,3 @@ source <("$HOME/.local/bin/yq" shell-completion zsh)
 EOF
 
 "$HOME/.local/bin/yq" --version
-echo $WORK
