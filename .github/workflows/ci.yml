@@ -21,7 +21,7 @@ jobs:
       - name: shellcheck
         run: >-
           docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.11.0
-          src/install.sh src/lib.sh src/steps/*.sh src/snippets/*.sh test/*.sh
+          src/install.sh src/lib.sh src/steps/*.sh scripts/*.sh test/*.sh
 
   two-accounts:
     runs-on: ubuntu-24.04
