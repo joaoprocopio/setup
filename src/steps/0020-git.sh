@@ -14,10 +14,18 @@ for key in user.name user.email; do
   fi
 done
 
-printf '%s\n' '**/.idea/**' '**/.vscode/**' >~/.gitignore
+# An excludes file the account already points to keeps its path, so the block lands where git reads it.
+if ! excludes="$(git config --global --path core.excludesfile)"; then
+  excludes=~/.gitignore
+  git config --global core.excludesfile "$excludes"
+fi
+mkdir -p "$(dirname "$excludes")"
+rc_block "$excludes" <<'EOF'
+**/.idea/**
+**/.vscode/**
+EOF
 
 # git config edits one key at a time, so keys from other tools survive.
 git config --global init.defaultBranch main
-git config --global core.excludesfile ~/.gitignore
 git config --global core.autocrlf false
 git config --global push.autoSetupRemote true
