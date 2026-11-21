@@ -7,7 +7,6 @@ if is_admin; then
     gnome-shell-extension-appindicator \
     gnome-shell-extension-desktop-icons-ng \
     gnome-shell-extension-tiling-assistant \
-    gnome-shell-extension-caffeine \
     fonts-inter fonts-jetbrains-mono
 
   # With linger on, this account's PipeWire starts at boot and fights GDM's PipeWire for the sound card.
@@ -43,7 +42,6 @@ gsettings set org.gnome.shell enabled-extensions "[
   'drive-menu@gnome-shell-extensions.gcampax.github.com',
   'ding@rastersoft.com',
   'tiling-assistant@leleat-on-github',
-  'caffeine@patapon.info',
   'quick-settings-audio-panel@rayzeq.github.io'
 ]"
 note "log out and back in to load the GNOME extensions"
