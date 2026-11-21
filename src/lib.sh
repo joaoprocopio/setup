@@ -1,59 +1,69 @@
-# Helpers shared by the scripts in steps/. A step sources this file first,
-# which puts it in strict mode and lets it also run on its own:
-#
-#   src/steps/0040-docker.sh
+# Sourced first by every step in src/steps/.
 
 set -euo pipefail
 
-# The name drops the order prefix, so renumbering a step keeps its
-# rc_block markers and its done marker.
+# --- Mode
+
+case "${TOOLS_MODE:-}" in
+  admin | no-admin) ;;
+  *)
+    echo "run steps through src/install.sh --admin or --no-admin" >&2
+    exit 2
+    ;;
+esac
+
+is_admin() {
+  [ "$TOOLS_MODE" = admin ]
+}
+
+# A --no-admin run fails on sudo instead of prompting for a password it cannot have.
+if ! is_admin; then
+  sudo() {
+    echo "$STEP: sudo $* needs --admin" >&2
+    return 1
+  }
+fi
+
+# --- Context
+
+# The name drops the NNNN- prefix, so renumbering a step keeps its rc_block markers.
 STEP="$(basename "$0" .sh)"
 STEP="${STEP#[0-9][0-9][0-9][0-9]-}"
-# Files a step installs live in a directory named after its script, such as
-# steps/0130-claude/ next to steps/0130-claude.sh.
 ASSETS="$(cd "$(dirname "$0")" && pwd)/$(basename "$0" .sh)"
 CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 
-# Installers that find ~/.local/bin on PATH leave the shell profiles alone,
-# and a step can call what an earlier step put there.
+# Installers that find ~/.local/bin on PATH leave the shell profiles alone.
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
-# Scratch space, removed when the step exits. It lives in /var/tmp because
-# /tmp is a RAM-backed tmpfs on Debian 13 and builds fill it fast. It is
-# world-readable because apt reads local .deb files as the _apt user.
+# /var/tmp because /tmp is a small tmpfs on Debian 13, and 755 because apt reads local .debs as _apt.
 WORK="$(mktemp -d -p /var/tmp tools.XXXXXX)"
 chmod 755 "$WORK"
 trap 'rm -rf "$WORK"' EXIT
 
-# The first install in a step refreshes the package index, so a step run on
-# its own long after base still finds current packages.
+# --- apt (admin only)
+
+# usage: apt_install <package-or-deb-path>...
 apt_install() {
-  if [ -z "${APT_FRESH:-}" ]; then
+  if [ -z "${APT_UPDATED:-}" ]; then
     sudo apt-get update
-    APT_FRESH=1
+    APT_UPDATED=1
   fi
   sudo env DEBIAN_FRONTEND=noninteractive apt-get install --yes "$@"
 }
 
-# Installs the .deb at <url>. apt resolves its dependencies, unlike dpkg -i.
 # usage: deb_install <name> <url>
 deb_install() {
   curl -#fSL "$2" -o "$WORK/$1.deb"
   apt_install "$WORK/$1.deb"
 }
 
-# Adds an apt repository and refreshes the package index. <name> picks the
-# files it writes, so running it again overwrites them:
-# /etc/apt/keyrings/<name>.{asc,gpg} and /etc/apt/sources.list.d/<name>.sources.
-# It also deletes <name>.list, because apt refuses a repository that two
-# files declare with different Signed-By values.
 # usage: apt_source <name> <key-url> <uri> <suite> [components]
 apt_source() {
   local name=$1 key_url=$2 uri=$3 suite=$4 components=${5:-} keyring
 
   curl -fsSL "$key_url" -o "$WORK/$name.key"
-  # apt tells an armored key from a binary one by the file extension.
+  # apt tells an armored key from a binary one by the extension.
   if grep -q -- '-----BEGIN PGP' "$WORK/$name.key"; then
     keyring="/etc/apt/keyrings/$name.asc"
   else
@@ -61,6 +71,7 @@ apt_source() {
   fi
   sudo install -D -m 0644 "$WORK/$name.key" "$keyring"
 
+  # apt refuses a repository that two files declare with different Signed-By values.
   sudo rm -f "/etc/apt/sources.list.d/$name.list"
   {
     echo "Types: deb"
@@ -72,12 +83,12 @@ apt_source() {
   } | sudo tee "/etc/apt/sources.list.d/$name.sources" >/dev/null
 
   sudo apt-get update
-  APT_FRESH=1
+  APT_UPDATED=1
 }
 
-# Writes stdin to <file> between two marker lines named after the step. A
-# second run replaces the block in place, so it never piles up duplicates.
-# usage: rc_block <file> <<'EOF' ... EOF
+# --- Home
+
+# Writes stdin between marker lines named after the step, replacing that block on a rerun: rc_block <file> <<'EOF'
 rc_block() {
   local file=$1
   touch "$file"
@@ -87,12 +98,11 @@ rc_block() {
     !skip
     END { if (!found) printf "\n%s\n%s\n%s\n", ENVIRON["RC_BEGIN"], ENVIRON["RC_BODY"], ENVIRON["RC_END"] }
   ' "$file" >"$WORK/rc"
-  # Writing through the existing file keeps a symlinked rc file a symlink.
+  # cat keeps a symlinked rc file a symlink.
   cat "$WORK/rc" >"$file"
 }
 
-# Queues a follow-up that needs you, such as a login or a relogin.
-# install.sh prints the queue after the last step.
+# Queues a manual follow-up, which install.sh prints after the last step.
 note() {
   printf '%s: %s\n' "$STEP" "$*" >>"${TOOLS_NOTES:-/dev/stderr}"
 }

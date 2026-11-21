@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-apt_install zsh git curl starship
+if is_admin; then
+  apt_install zsh git curl starship
+fi
 
-# --unattended stops the installer from switching shells and from starting
-# zsh, which would halt install.sh. It replaces ~/.zshrc with its template,
-# so this step runs before every step that writes to ~/.zshrc.
+# --unattended keeps the installer from switching shells and starting zsh. It replaces ~/.zshrc, so this step runs first.
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$WORK/ohmyzsh.sh"
   sh "$WORK/ohmyzsh.sh" --unattended
 fi
 
 if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$(command -v zsh)" ]; then
-  sudo chsh -s "$(command -v zsh)" "$USER"
-  note "saia da sessão e entre de novo para o zsh virar o seu shell"
+  if is_admin; then
+    sudo chsh -s "$(command -v zsh)" "$USER"
+    note "log out and back in to make zsh your shell"
+  else
+    note "ask the admin account to run \`sudo chsh -s $(command -v zsh) $USER\`, then log out and back in"
+  fi
 fi
 
-# starship preset -o fails when the directory is missing. Each run
-# overwrites starship.toml, so edits to it do not survive a rerun.
+# Each run overwrites starship.toml.
 mkdir -p ~/.config
 starship preset plain-text-symbols -o ~/.config/starship.toml
 
@@ -34,9 +37,7 @@ export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 eval "$(starship init zsh)"
 EOF
 
-# Every zsh reads ~/.zshenv, including the non-interactive `zsh -c` that
-# Claude Code's Bash tool runs. With NO_NOMATCH an unmatched glob such as
-# --include=*.py passes through as written instead of aborting the command.
+# Every zsh reads ~/.zshenv, so an unmatched glob in `zsh -c` passes through instead of aborting.
 rc_block ~/.zshenv <<'EOF'
 setopt NO_NOMATCH
 EOF

@@ -3,19 +3,26 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STATE="${XDG_STATE_HOME:-$HOME/.local/state}/tools"
+readonly SRC
+readonly STEPS_DIR="$SRC/steps"
+# --admin records its runs machine-wide, so a --no-admin account can read them.
+readonly ADMIN_STATE=/var/lib/tools
+readonly HOME_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/tools"
+
+MODE=
+STEPS=()
 
 usage() {
   cat <<'EOF'
-uso: src/install.sh [passo...]
+usage: src/install.sh --admin|--no-admin [--list] [step...]
 
-Sem argumentos, roda em ordem cada passo que ainda não deu certo e cada passo
-que mudou desde a última vez que deu certo. Com argumentos, roda só os passos
-citados, mesmo os que já deram certo. Cite um passo pelo nome (docker) ou pelo
-arquivo (0040-docker).
+  --admin     install machine-wide software with sudo, then set up your home
+  --no-admin  set up your home only, without sudo; --admin must run first
+  --list      print each step and its state
+  --help      print this help
 
-  --list   mostra cada passo e o estado dele
-  --help   mostra esta ajuda
+With no steps, runs each step that is pending or changed. With steps, runs
+those steps even when done. Name a step as docker or 0040-docker.
 EOF
 }
 
@@ -24,148 +31,225 @@ die() {
   exit 1
 }
 
-# A step is steps/NNNN-<name>.sh, plus an optional steps/NNNN-<name>/ that
-# holds the files it installs. The number sets the order, and the name
-# identifies the step everywhere else.
-name_of() {
+usage_error() {
+  echo "$*" >&2
+  usage >&2
+  exit 2
+}
+
+# --- Steps
+
+# Fills STEPS with every NNNN-name in order, and dies on a file that breaks that layout.
+load_steps() {
+  local path file number name
+  local -A seen_numbers=() seen_names=()
+  for path in "$STEPS_DIR"/*; do
+    file="${path##*/}"
+    if [ -d "$path" ]; then
+      [ -f "$path.sh" ] || die "src/steps/$file/ has no src/steps/$file.sh"
+      continue
+    fi
+    [[ $file =~ ^([0-9]{4})-([a-z0-9]+(-[a-z0-9]+)*)\.sh$ ]] ||
+      die "src/steps/$file does not match NNNN-name.sh"
+    number="${BASH_REMATCH[1]}"
+    name="${BASH_REMATCH[2]}"
+    [ -z "${seen_numbers[$number]:-}" ] || die "number $number repeats: ${seen_numbers[$number]} and $file"
+    [ -z "${seen_names[$name]:-}" ] || die "name $name repeats: ${seen_names[$name]} and $file"
+    seen_numbers[$number]="$file"
+    seen_names[$name]="$file"
+    STEPS+=("${file%.sh}")
+  done
+}
+
+step_name() {
   echo "${1#*-}"
 }
 
-# A step's marker holds the hash of the step as it last succeeded, so
-# editing its script or its files makes the next run pick it up again.
-hash_of() {
-  local dir="$SRC/steps/$1"
-  if [ -d "$dir" ]; then
-    {
-      cat "$dir.sh"
-      (cd "$dir" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum)
-    } | sha256sum | cut -d' ' -f1
-  else
-    sha256sum <"$dir.sh" | cut -d' ' -f1
-  fi
-}
-
-state_of() {
-  local marker
-  marker="$STATE/$(name_of "$1").done"
-  if [ ! -f "$marker" ]; then
-    echo pendente
-  elif [ "$(cat "$marker")" != "$(hash_of "$1")" ]; then
-    echo mudou
-  else
-    echo feito
-  fi
-}
-
-# Reads steps/ in order and refuses anything that breaks the layout, so a
-# misnamed file is never skipped silently.
-STEPS=()
-declare -A seen_number seen_name
-for f in "$SRC"/steps/*; do
-  b="$(basename "$f")"
-  if [ -d "$f" ]; then
-    [ -f "$f.sh" ] || die "src/steps/$b/ não tem um src/steps/$b.sh"
-    continue
-  fi
-  [[ "$b" =~ ^([0-9]{4})-([a-z0-9]+(-[a-z0-9]+)*)\.sh$ ]] ||
-    die "src/steps/$b não segue o formato NNNN-nome.sh"
-  number="${BASH_REMATCH[1]}"
-  name="${BASH_REMATCH[2]}"
-  [ -z "${seen_number[$number]:-}" ] || die "o número $number se repete: ${seen_number[$number]} e $b"
-  [ -z "${seen_name[$name]:-}" ] || die "o nome $name se repete: ${seen_name[$name]} e $b"
-  seen_number[$number]="$b"
-  seen_name[$name]="$b"
-  STEPS+=("${b%.sh}")
-done
-
-# Resolves a name or a NNNN-name to the step's NNNN-name.
-resolve() {
-  local s
-  for s in "${STEPS[@]}"; do
-    if [ "$s" = "$1" ] || [ "$(name_of "$s")" = "$1" ]; then
-      echo "$s"
+# usage: find_step <name-or-NNNN-name>
+find_step() {
+  local step
+  for step in "${STEPS[@]}"; do
+    if [ "$step" = "$1" ] || [ "$(step_name "$step")" = "$1" ]; then
+      echo "$step"
       return
     fi
   done
-  die "passo desconhecido: $1"
+  die "unknown step: $1"
 }
 
-case "${1:-}" in
-  -h | --help)
-    usage
-    exit
-    ;;
-  --list)
-    for s in "${STEPS[@]}"; do
-      printf '%-20s %s\n' "$s" "$(state_of "$s")"
-    done
-    exit
-    ;;
-  -*)
-    usage >&2
-    exit 2
-    ;;
-esac
+# Hashes the script and its asset directory, so an edit to either reruns the step.
+step_hash() {
+  local script="$STEPS_DIR/$1.sh" assets="$STEPS_DIR/$1"
+  {
+    cat "$script"
+    if [ -d "$assets" ]; then
+      (cd "$assets" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum)
+    fi
+  } | sha256sum | cut -d' ' -f1
+}
 
-[ "$(id -u)" -ne 0 ] || die "rode como seu usuário, não como root: os passos chamam sudo quando precisam"
+# --- State
 
-if [ $# -gt 0 ]; then
-  run=()
-  for arg in "$@"; do
-    s="$(resolve "$arg")"
-    run+=("$s")
-  done
-else
-  run=()
-  for s in "${STEPS[@]}"; do
-    [ "$(state_of "$s")" = feito ] || run+=("$s")
-  done
-fi
+# A marker holds the hash of the step version that last succeeded.
+admin_marker() {
+  echo "$ADMIN_STATE/$(step_name "$1").done"
+}
 
-if [ ${#run[@]} -eq 0 ]; then
-  echo "nada a fazer: todos os passos já deram certo"
-  exit
-fi
+home_marker() {
+  echo "$HOME_STATE/$(step_name "$1").done"
+}
 
-# Asks for the password once and keeps sudo's timestamp fresh, so a long
-# build never stops at a password prompt halfway through.
-sudo -v
-while kill -0 "$$" 2>/dev/null; do
-  sudo -n -v 2>/dev/null || true
-  sleep 60
-done >/dev/null 2>&1 &
-keepalive=$!
+own_marker() {
+  if [ "$MODE" = admin ]; then admin_marker "$1"; else home_marker "$1"; fi
+}
 
-TOOLS_NOTES="$(mktemp)"
-export TOOLS_NOTES
-trap 'kill "$keepalive" 2>/dev/null; rm -f "$TOOLS_NOTES"' EXIT
-
-mkdir -p "$STATE"
-ok=()
-failed=()
-for s in "${run[@]}"; do
-  name="$(name_of "$s")"
-  printf '\n\033[1m==> %s\033[0m\n' "$name"
-  if bash "$SRC/steps/$s.sh"; then
-    hash_of "$s" >"$STATE/$name.done"
-    ok+=("$name")
+# usage: marker_state <marker> <hash>
+marker_state() {
+  if [ ! -f "$1" ]; then
+    echo pending
+  elif [ "$(cat "$1")" != "$2" ]; then
+    echo changed
   else
-    failed+=("$name")
+    echo "done"
   fi
-done
+}
 
-echo
-if [ ${#ok[@]} -gt 0 ]; then
-  echo "deu certo: ${ok[*]}"
-fi
-if [ -s "$TOOLS_NOTES" ]; then
+# Prints done, pending, changed, or waiting, which means --admin has not run this version yet.
+step_state() {
+  local hash
+  hash="$(step_hash "$1")"
+  if [ "$MODE" = no-admin ] && [ "$(marker_state "$(admin_marker "$1")" "$hash")" != "done" ]; then
+    echo waiting
+  else
+    marker_state "$(own_marker "$1")" "$hash"
+  fi
+}
+
+write_marker() {
+  local marker hash
+  marker="$(own_marker "$1")"
+  hash="$(step_hash "$1")"
+  if [ "$MODE" = admin ]; then
+    echo "$hash" | sudo tee "$marker" >/dev/null
+  else
+    echo "$hash" >"$marker"
+  fi
+}
+
+# --- Commands
+
+list_steps() {
+  local step
+  for step in "${STEPS[@]}"; do
+    printf '%-20s %s\n' "$step" "$(step_state "$step")"
+  done
+}
+
+# Asks for the password once and refreshes it in the background, so a long build never stops at a prompt.
+start_sudo() {
+  sudo -v || die "--admin needs sudo"
+  while kill -0 "$$" 2>/dev/null; do
+    sudo -n -v 2>/dev/null || true
+    sleep 60
+  done >/dev/null 2>&1 &
+  SUDO_KEEPALIVE=$!
+  sudo install -d -m 0755 "$ADMIN_STATE"
+}
+
+# usage: run_steps <step>...
+run_steps() {
+  local step name passed=() failed=()
+
+  SUDO_KEEPALIVE=
+  TOOLS_NOTES="$(mktemp)"
+  trap 'if [ -n "$SUDO_KEEPALIVE" ]; then kill "$SUDO_KEEPALIVE" 2>/dev/null; fi; rm -f "$TOOLS_NOTES"' EXIT
+  export TOOLS_MODE="$MODE" TOOLS_NOTES
+
+  if [ "$MODE" = admin ]; then start_sudo; fi
+  mkdir -p "$HOME_STATE"
+
+  for step in "$@"; do
+    name="$(step_name "$step")"
+    printf '\n\033[1m==> %s\033[0m\n' "$name"
+    if [ "$MODE" = no-admin ] && [ "$(step_state "$step")" = waiting ]; then
+      echo "$name: run src/install.sh --admin $name first" >&2
+      failed+=("$name")
+    elif bash "$STEPS_DIR/$step.sh" && write_marker "$step"; then
+      passed+=("$name")
+    else
+      failed+=("$name")
+    fi
+  done
+
   echo
-  echo "falta fazer à mão:"
-  sed 's/^/  /' "$TOOLS_NOTES"
-fi
-if [ ${#failed[@]} -gt 0 ]; then
-  echo >&2
-  echo "falhou: ${failed[*]}" >&2
-  echo "corrija e rode src/install.sh de novo: ele só roda o que ainda não deu certo." >&2
-  exit 1
-fi
+  if [ ${#passed[@]} -gt 0 ]; then
+    echo "passed: ${passed[*]}"
+  fi
+  if [ -s "$TOOLS_NOTES" ]; then
+    echo
+    echo "to do by hand:"
+    sed 's/^/  /' "$TOOLS_NOTES"
+  fi
+  if [ ${#failed[@]} -gt 0 ]; then
+    echo >&2
+    echo "failed: ${failed[*]}" >&2
+    echo "fix them and run src/install.sh again: it runs only what has not passed." >&2
+    exit 1
+  fi
+}
+
+# --- Main
+
+set_mode() {
+  [ -z "$MODE" ] || usage_error "pass only one of --admin and --no-admin"
+  MODE=$1
+}
+
+main() {
+  local list=false names=() run=() name step
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --admin) set_mode admin ;;
+      --no-admin) set_mode no-admin ;;
+      --list) list=true ;;
+      -h | --help)
+        usage
+        exit
+        ;;
+      -*) usage_error "unknown option: $1" ;;
+      *) names+=("$1") ;;
+    esac
+    shift
+  done
+  [ -n "$MODE" ] || usage_error "pass --admin or --no-admin"
+  readonly MODE
+
+  load_steps
+
+  if $list; then
+    list_steps
+    exit
+  fi
+
+  [ "$(id -u)" -ne 0 ] || die "run as your own account, not as root"
+
+  if [ ${#names[@]} -gt 0 ]; then
+    for name in "${names[@]}"; do
+      run+=("$(find_step "$name")")
+    done
+  else
+    for step in "${STEPS[@]}"; do
+      [ "$(step_state "$step")" = "done" ] || run+=("$step")
+    done
+  fi
+
+  if [ ${#run[@]} -eq 0 ]; then
+    echo "nothing to do: every step has passed"
+    exit
+  fi
+
+  run_steps "${run[@]}"
+}
+
+main "$@"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-apt_install ffmpeg obs-studio
+if is_admin; then
+  apt_install ffmpeg obs-studio
+fi
