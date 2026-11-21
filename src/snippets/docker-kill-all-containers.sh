@@ -1,3 +1,3 @@
 #!/bin/env bash
 
-docker rm -f $(docker ps -q)
+docker ps -q | xargs -r docker rm -f
