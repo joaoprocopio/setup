@@ -1,4 +1,3 @@
-- construir uma CLI com CLAP que tenha um código decente e escalável.
-  as primeiras coisas que vão entrar o check writing, e o nudge que aponta para o LSP.
+- Build a CLI with clap, with decent code that scales. Its first features are the writing check and the nudge that points to the LSP.
 
-- escrever uma CLI pra extrair os meus transcripts de vídeo
+- Write a CLI that extracts my video transcripts.

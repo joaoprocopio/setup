@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-system() {
+if is_admin; then
   apt_install \
     dconf-editor gnome-tweaks gnome-shell-extensions \
     gnome-shell-extension-appindicator \
@@ -10,96 +10,81 @@ system() {
     gnome-shell-extension-caffeine \
     fonts-inter fonts-jetbrains-mono
 
-  # Linger desligado: com ele, o PipeWire do usuário sobe no boot junto com o
-  # PipeWire da tela de login do GDM, os dois disputam a placa de som, e o
-  # perdedor fica sem saída ou sem entrada de áudio.
-  # Vale para a conta admin, a única com sudo. Conta nova já começa com linger
-  # desligado, então as outras não precisam disto.
+  # With linger on, this account's PipeWire starts at boot and fights GDM's PipeWire for the sound card.
   sudo loginctl disable-linger "$USER"
-}
+fi
 
-user() {
-  # Extensions
-  # Quick Settings Audio Panel não tem pacote no Debian, então vem do extensions.gnome.org
-  # Ela mostra o slider do microfone mesmo quando nenhum app usa o microfone
-  GNOME_VERSION="$(gnome-shell --version | grep -o '[0-9]*' | head -1)"
-  curl -fsSL "https://extensions.gnome.org/download-extension/quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip?shell_version=$GNOME_VERSION" -o "$WORK/qsap.zip"
-  gnome-extensions install --force "$WORK/qsap.zip"
-  # Só as chaves que diferem do default do schema da extensão
-  QSAP=/org/gnome/shell/extensions/quick-settings-audio-panel
-  dconf write $QSAP/panel-type "'merged-panel'"
-  dconf write $QSAP/merged-panel-position "'top'"
-  dconf write $QSAP/always-show-input-volume-slider true
-  dconf write $QSAP/autohide-profile-switcher false
-  dconf write $QSAP/create-applications-volume-sliders false
-  # Esta lista gera mídia, alto-falante e microfone, de cima para baixo.
-  # A ordem da lista não é a da tela: com a posição 'top', a extensão insere
-  # cada widget no índice 2 do grid, que nos sliders padrão é o do microfone.
-  dconf write $QSAP/widgets-order "[
-    'output-volume-slider',
-    'mpris-controllers',
-    'input-volume-slider'
-  ]"
+# Quick Settings Audio Panel has no Debian package. It shows the microphone slider even when no app uses the microphone.
+GNOME_VERSION="$(gnome-shell --version | grep -o '[0-9]*' | head -1)"
+curl -fsSL "https://extensions.gnome.org/download-extension/quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip?shell_version=$GNOME_VERSION" -o "$WORK/qsap.zip"
+gnome-extensions install --force "$WORK/qsap.zip"
+# Only the keys that differ from the extension's schema defaults.
+QSAP=/org/gnome/shell/extensions/quick-settings-audio-panel
+dconf write $QSAP/panel-type "'merged-panel'"
+dconf write $QSAP/merged-panel-position "'top'"
+dconf write $QSAP/always-show-input-volume-slider true
+dconf write $QSAP/autohide-profile-switcher false
+dconf write $QSAP/create-applications-volume-sliders false
+# Shows media, speaker, and microphone from top to bottom, because 'top' inserts each widget at grid index 2.
+dconf write $QSAP/widgets-order "[
+  'output-volume-slider',
+  'mpris-controllers',
+  'input-volume-slider'
+]"
 
-  # Desktop Icons NG e Tiling Assistant são as mesmas extensões que o Ubuntu liga por padrão
-  # Escrito direto no gsettings pq o gnome-extensions só enxerga extensões novas depois de relogar
-  gsettings set org.gnome.shell disable-user-extensions false
-  # O GNOME ignora em enabled-extensions todo UUID que também está em disabled-extensions
-  gsettings set org.gnome.shell disabled-extensions "[]"
-  gsettings set org.gnome.shell enabled-extensions "[
-    'ubuntu-appindicators@ubuntu.com',
-    'user-theme@gnome-shell-extensions.gcampax.github.com',
-    'native-window-placement@gnome-shell-extensions.gcampax.github.com',
-    'drive-menu@gnome-shell-extensions.gcampax.github.com',
-    'ding@rastersoft.com',
-    'tiling-assistant@leleat-on-github',
-    'caffeine@patapon.info',
-    'quick-settings-audio-panel@rayzeq.github.io'
-  ]"
-  note "saia da sessão e entre de novo para o GNOME carregar as extensões"
+# gsettings, because gnome-extensions sees a new extension only after the next login.
+gsettings set org.gnome.shell disable-user-extensions false
+# GNOME ignores an enabled UUID that is also in disabled-extensions.
+gsettings set org.gnome.shell disabled-extensions "[]"
+gsettings set org.gnome.shell enabled-extensions "[
+  'ubuntu-appindicators@ubuntu.com',
+  'user-theme@gnome-shell-extensions.gcampax.github.com',
+  'native-window-placement@gnome-shell-extensions.gcampax.github.com',
+  'drive-menu@gnome-shell-extensions.gcampax.github.com',
+  'ding@rastersoft.com',
+  'tiling-assistant@leleat-on-github',
+  'caffeine@patapon.info',
+  'quick-settings-audio-panel@rayzeq.github.io'
+]"
+note "log out and back in to load the GNOME extensions"
 
-  # Dark Mode
-  gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+# Dark mode
+gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 
-  # Animações
-  gsettings set org.gnome.desktop.interface enable-animations false
+# Animations
+gsettings set org.gnome.desktop.interface enable-animations false
 
-  # Hot Corner
-  gsettings set org.gnome.desktop.interface enable-hot-corners false
+# Hot corner
+gsettings set org.gnome.desktop.interface enable-hot-corners false
 
-  # Workspaces: número fixo de 1, em todas as telas
-  gsettings set org.gnome.mutter dynamic-workspaces false
-  gsettings set org.gnome.desktop.wm.preferences num-workspaces 1
-  gsettings set org.gnome.mutter workspaces-only-on-primary false
+# One fixed workspace, on every screen
+gsettings set org.gnome.mutter dynamic-workspaces false
+gsettings set org.gnome.desktop.wm.preferences num-workspaces 1
+gsettings set org.gnome.mutter workspaces-only-on-primary false
 
-  # Fontes
-  gsettings set org.gnome.desktop.interface font-name "Inter 11"
-  gsettings set org.gnome.desktop.interface document-font-name "Inter 11"
-  gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono 11"
-  gsettings set org.gnome.desktop.wm.preferences titlebar-font "Inter Bold 11"
+# Fonts
+gsettings set org.gnome.desktop.interface font-name "Inter 11"
+gsettings set org.gnome.desktop.interface document-font-name "Inter 11"
+gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono 11"
+gsettings set org.gnome.desktop.wm.preferences titlebar-font "Inter Bold 11"
 
-  # Tweaks > Windows > Titlebar Buttons > Maximize + Minimize
-  gsettings set org.gnome.desktop.wm.preferences button-layout "appmenu:minimize,maximize,close"
+# Tweaks > Windows > Titlebar Buttons > Maximize + Minimize
+gsettings set org.gnome.desktop.wm.preferences button-layout "appmenu:minimize,maximize,close"
 
-  # Touchpad > Disable Touchpad While Typing desligado
-  gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false
+# Touchpad > Disable Touchpad While Typing off
+gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false
 
-  # Compose Key no Right Alt
-  gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
+# Compose key on Right Alt
+gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
 
-  # Switch Windows com ALT + TAB
-  gsettings set org.gnome.desktop.wm.keybindings switch-applications "[]"
-  gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward "[]"
-  gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
+# Alt+Tab switches windows, not applications
+gsettings set org.gnome.desktop.wm.keybindings switch-applications "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
 
-  # Custom Keybindings
-  KEYBINDING=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/
-  gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['$KEYBINDING']"
-
-  # Keybind 0: terminal (o passo ghostty instala o binário)
-  gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" binding "<Control><Alt>t"
-  gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" command "$HOME/.local/bin/ghostty"
-  gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" name "Open Terminal"
-}
-
-run_step "$@"
+# Ctrl+Alt+T opens the Ghostty that the ghostty step builds
+KEYBINDING=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/
+gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['$KEYBINDING']"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" binding "<Control><Alt>t"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" command "$HOME/.local/bin/ghostty"
+gsettings set "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$KEYBINDING" name "Open Terminal"

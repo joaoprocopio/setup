@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-system() {
-  # Debian's own repositories, with all four components that their Release
-  # files list, so apt also finds packages in contrib and non-free. The write
-  # comes before the first apt_install, because that call runs apt-get update.
+if is_admin; then
+  # All four components, so apt also finds packages in contrib and non-free.
   sudo tee /etc/apt/sources.list >/dev/null <<EOF
 deb http://deb.debian.org/debian/ $CODENAME main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian/ $CODENAME main contrib non-free non-free-firmware
@@ -45,6 +43,4 @@ EOF
     libapr1-dev libaprutil1-dev libglib2.0-dev libc6-dbg \
     libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libwebkit2gtk-4.1-dev \
     libx11-dev libudev-dev libxkbcommon-x11-0
-}
-
-run_step "$@"
+fi

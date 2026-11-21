@@ -1,24 +1,15 @@
 # tools
 
-Instala e configura uma máquina Debian em duas contas Linux: a conta admin
-(pessoal, no grupo `sudo`) e a conta de trabalho (sem sudo).
+Installs and configures a Debian machine for two Linux accounts: an admin account that has sudo, and a second account that never calls sudo.
 
-## Passo a passo
+## Set up a new machine
 
-1. Instale o Debian com LUKS e deixe a senha do root vazia no instalador. Assim
-   a primeira conta que você criar entra no grupo `sudo`.
-2. Nessa conta: `sudo apt install git`, clone `https://github.com/joaoprocopio/setup.git`,
-   rode `./src/install.sh` e escolha o perfil `pessoal`. Ela instala o que é da
-   máquina inteira e configura a própria home.
-3. Crie a conta de trabalho, sem sudo: `sudo adduser --shell /usr/bin/zsh <usuário>`.
-4. Saia da sessão e entre na conta de trabalho pela tela de login, não por
-   `su`: o docker rootless e as configurações do GNOME precisam da sessão
-   própria dela. Lá, clone `https://github.com/joaoprocopio/setup.git`, rode
-   `./src/install.sh` e escolha o perfil `trabalho`. Ela configura só a própria
-   home, em cima do que a conta admin instalou, e nunca chama sudo.
-5. Depois de mudar um passo que tem parte de sistema, rode `./src/install.sh`
-   na conta admin primeiro. A conta de trabalho mostra `espera o admin` em
-   `./src/install.sh --list` até isso acontecer.
+1. Install Debian with LUKS, and leave the root password empty, so the first account joins the `sudo` group.
+2. In that account, run `sudo apt install git`, clone `https://github.com/joaoprocopio/setup.git`, and run `./src/install.sh --admin`. It installs machine-wide software and sets up that account's home.
+3. Create the second account: `sudo adduser --shell /usr/bin/zsh account_name`.
+4. Log in to the second account from the login screen, not with `su`, because rootless Docker and the GNOME settings need its own session.
+5. In the second account, clone the repository and run `./src/install.sh --no-admin`. It sets up that account's home only.
 
-Na primeira vez, cada conta escolhe o perfil e a identidade do git. Elas ficam
-em `~/.config/tools/profile`, fora do repositório.
+On its first run in each account, the git step asks for your git name and email.
+
+After you change a step, run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows the step as `waiting`.
