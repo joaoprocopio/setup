@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
+needs fnm
+
 # https://code.claude.com/docs/en/setup
 if ! command -v claude >/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
@@ -8,6 +10,7 @@ fi
 
 # fnm puts node on PATH only in ~/.zshrc, which bash does not read.
 eval "$(fnm env --shell bash)"
+needs fnm npm
 
 # agent-browser uses the Chrome from the chrome step.
 npm install --global agent-browser

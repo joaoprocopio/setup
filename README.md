@@ -25,3 +25,5 @@ prismlauncher
 ```
 
 When you run `install.sh` without step names, it skips the listed steps, and `--list` shows them as `ignored`. A step you name on the command line still runs. An unknown name in the file stops `install.sh` with the file and line number.
+
+If you ignore a step that a later step uses, such as `fnm` for `claude`, the later step fails with a message that names the step to run.

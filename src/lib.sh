@@ -38,6 +38,14 @@ CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
+# usage: needs <step> [command], and exits naming <step> when the command it installs is missing.
+needs() {
+  local step=$1 command=${2:-$1}
+  command -v "$command" >/dev/null && return
+  echo "$STEP: needs $command from the $step step; run src/install.sh --$TOOLS_MODE $step, or remove $step from .setupignore" >&2
+  exit 1
+}
+
 # /var/tmp because /tmp is a small tmpfs on Debian 13, and 755 because apt reads local .debs as _apt.
 WORK="$(mktemp -d -p /var/tmp tools.XXXXXX)"
 chmod 755 "$WORK"

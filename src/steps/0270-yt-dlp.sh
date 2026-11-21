@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
+needs uv
+
 # The default extra brings yt-dlp-ejs, which solves YouTube's JavaScript challenges, https://github.com/yt-dlp/yt-dlp#installation
 uv tool install --upgrade "yt-dlp[default]"
 
