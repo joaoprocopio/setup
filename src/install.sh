@@ -34,7 +34,7 @@ die() {
 usage_error() {
   echo "$*" >&2
   usage >&2
-  exit 2
+  exit 3
 }
 
 # --- Steps
