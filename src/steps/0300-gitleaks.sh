@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-# Secret scanner. Debian's package is years behind and upstream has no install script.
+# Secret scanner, https://github.com/gitleaks/gitleaks#installing, from the release, because Debian's package is years behind and upstream has no install script.
 tag="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/gitleaks/gitleaks/releases/latest)"
 version="${tag##*/v}"
 tarball="gitleaks_${version}_linux_x64.tar.gz"

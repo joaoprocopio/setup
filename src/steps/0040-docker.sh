@@ -15,7 +15,7 @@ if is_admin; then
     docker-buildx-plugin docker-compose-plugin \
     docker-ce-rootless-extras uidmap dbus-user-session
 
-  # The docker group is root-equivalent, so only the account that already has sudo joins it.
+  # The docker group is root-equivalent, so only the account that already has sudo joins it, https://docs.docker.com/engine/install/linux-postinstall/
   sudo groupadd --force docker
   sudo usermod -aG docker "$USER"
   sudo systemctl enable docker.service containerd.service

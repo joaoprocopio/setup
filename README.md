@@ -12,4 +12,4 @@ Installs and configures a Debian machine for two Linux accounts: an admin accoun
 
 On its first run in each account, the git step asks for your git name and email.
 
-After you change a step, run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows the step as `waiting`.
+After you change a step, pull the change in both clones and run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows the step as `waiting`, because each account hashes the steps in its own clone.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-# The dist server deletes old releases, so the update feed names the current one.
+# The dist server deletes old releases, so the update feed names the current one, https://tb-manual.torproject.org/installation/
 cd "$WORK" || exit
 curl -fsSL https://aus1.torproject.org/torbrowser/update_3/release/download-linux-x86_64.json -o release.json
 curl -#fSL "$(jq -r .binary release.json)" -o tor-browser.tar.xz

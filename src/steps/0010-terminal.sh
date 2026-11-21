@@ -16,7 +16,7 @@ if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$(command -v zsh)" ]; then
     sudo chsh -s "$(command -v zsh)" "$USER"
     note "log out and back in to make zsh your shell"
   else
-    note "run \`chsh -s $(command -v zsh)\`, then log out and back in"
+    note "ask the admin account to run \`sudo chsh -s $(command -v zsh) $USER\`, then log out and back in"
   fi
 fi
 

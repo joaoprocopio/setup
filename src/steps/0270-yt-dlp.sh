@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-# The default extra brings yt-dlp-ejs, which solves YouTube's JavaScript challenges.
+# The default extra brings yt-dlp-ejs, which solves YouTube's JavaScript challenges, https://github.com/yt-dlp/yt-dlp#installation
 uv tool install --upgrade "yt-dlp[default]"
 
 # yt-dlp-ejs needs a JavaScript runtime, and yt-dlp enables only deno by default.
