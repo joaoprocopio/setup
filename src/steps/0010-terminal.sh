@@ -1,27 +1,34 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
-apt_install zsh git curl starship
+system() {
+  apt_install zsh git curl starship
+}
 
-# --unattended stops the installer from switching shells and from starting
-# zsh, which would halt install.sh. It replaces ~/.zshrc with its template,
-# so this step runs before every step that writes to ~/.zshrc.
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$WORK/ohmyzsh.sh"
-  sh "$WORK/ohmyzsh.sh" --unattended
-fi
+user() {
+  # --unattended stops the installer from switching shells and from starting
+  # zsh, which would halt install.sh. It replaces ~/.zshrc with its template,
+  # so this step runs before every step that writes to ~/.zshrc.
+  if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$WORK/ohmyzsh.sh"
+    sh "$WORK/ohmyzsh.sh" --unattended
+  fi
 
-if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$(command -v zsh)" ]; then
-  sudo chsh -s "$(command -v zsh)" "$USER"
-  note "saia da sessão e entre de novo para o zsh virar o seu shell"
-fi
+  if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$(command -v zsh)" ]; then
+    if [ -n "$ADMIN" ]; then
+      sudo chsh -s "$(command -v zsh)" "$USER"
+      note "saia da sessão e entre de novo para o zsh virar o seu shell"
+    else
+      note "peça à conta admin para rodar \`sudo chsh -s $(command -v zsh) $USER\`, e depois saia da sessão e entre de novo"
+    fi
+  fi
 
-# starship preset -o fails when the directory is missing. Each run
-# overwrites starship.toml, so edits to it do not survive a rerun.
-mkdir -p ~/.config
-starship preset plain-text-symbols -o ~/.config/starship.toml
+  # starship preset -o fails when the directory is missing. Each run
+  # overwrites starship.toml, so edits to it do not survive a rerun.
+  mkdir -p ~/.config
+  starship preset plain-text-symbols -o ~/.config/starship.toml
 
-rc_block ~/.zshrc <<'EOF'
+  rc_block ~/.zshrc <<'EOF'
 alias docker-compose="docker compose"
 alias k="kubectl"
 alias dk="docker"
@@ -34,13 +41,16 @@ export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 eval "$(starship init zsh)"
 EOF
 
-# Every zsh reads ~/.zshenv, including the non-interactive `zsh -c` that
-# Claude Code's Bash tool runs. With NO_NOMATCH an unmatched glob such as
-# --include=*.py passes through as written instead of aborting the command.
-rc_block ~/.zshenv <<'EOF'
+  # Every zsh reads ~/.zshenv, including the non-interactive `zsh -c` that
+  # Claude Code's Bash tool runs. With NO_NOMATCH an unmatched glob such as
+  # --include=*.py passes through as written instead of aborting the command.
+  rc_block ~/.zshenv <<'EOF'
 setopt NO_NOMATCH
 EOF
 
-rc_block ~/.bashrc <<'EOF'
+  rc_block ~/.bashrc <<'EOF'
 export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 EOF
+}
+
+run_step "$@"

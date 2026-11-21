@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+# shellcheck source=/dev/null
+. "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
+
 # The name drops the order prefix, so renumbering a step keeps its
 # rc_block markers and its done marker.
 STEP="$(basename "$0" .sh)"
@@ -95,4 +98,37 @@ rc_block() {
 # install.sh prints the queue after the last step.
 note() {
   printf '%s: %s\n' "$STEP" "$*" >>"${TOOLS_NOTES:-/dev/stderr}"
+}
+
+# Runs the parts a step defines, as its last line: run_step "$@".
+# system() touches the machine and only runs in the admin account. user()
+# writes only under $HOME, and may call sudo only behind [ -n "$ADMIN" ].
+# install.sh runs one part per call, with `system` or `user` as the argument.
+# A step run on its own has no argument and runs both, system first.
+run_step() {
+  case "${1:-}" in
+    system | user)
+      if ! declare -F "$1" >/dev/null; then
+        echo "$STEP: este passo não tem a parte $1" >&2
+        exit 1
+      fi
+      "$1"
+      ;;
+    "")
+      if declare -F system >/dev/null; then
+        if [ -n "$ADMIN" ]; then
+          system
+        else
+          echo "$STEP: conta sem sudo, a parte de sistema ficou de fora" >&2
+        fi
+      fi
+      if declare -F user >/dev/null; then
+        user
+      fi
+      ;;
+    *)
+      echo "uso: $0 [system|user]" >&2
+      exit 2
+      ;;
+  esac
 }
