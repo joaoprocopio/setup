@@ -5,12 +5,14 @@ set -euo pipefail
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SRC
 readonly STEPS_DIR="$SRC/steps"
+readonly IGNORE_FILE="${SRC%/*}/.setupignore"
 # --admin records its runs machine-wide, so a --no-admin account can read them.
 readonly ADMIN_STATE=/var/lib/tools
 readonly HOME_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/tools"
 
 MODE=
 STEPS=()
+declare -A IGNORED=()
 
 usage() {
   cat <<'EOF'
@@ -21,8 +23,9 @@ usage: src/install.sh --admin|--no-admin [--list] [step...]
   --list      print each step and its state
   --help      print this help
 
-With no steps, runs each step that is pending or changed. With steps, runs
-those steps even when done. Name a step as docker or 0040-docker.
+With no steps, runs each step that is pending or changed, and skips the steps
+listed in .setupignore. With steps, runs those steps even when done or ignored.
+Name a step as docker or 0040-docker.
 EOF
 }
 
@@ -75,6 +78,24 @@ find_step() {
     fi
   done
   die "unknown step: $1"
+}
+
+# Fills IGNORED from .setupignore, one name or NNNN-name per line, and dies on an unknown step.
+load_ignored() {
+  local line number=0 step
+  [ -f "$IGNORE_FILE" ] || return 0
+  while IFS= read -r line || [ -n "$line" ]; do
+    number=$((number + 1))
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    if [ -z "$line" ] || [ "${line:0:1}" = "#" ]; then continue; fi
+    step="$(find_step "$line" 2>/dev/null)" || die "$IGNORE_FILE:$number: unknown step: $line"
+    IGNORED[$step]=1
+  done <"$IGNORE_FILE"
+}
+
+is_ignored() {
+  [ -n "${IGNORED[$1]:-}" ]
 }
 
 # Hashes the script and its asset directory, so an edit to either reruns the step.
@@ -139,9 +160,10 @@ write_marker() {
 # --- Commands
 
 list_steps() {
-  local step
+  local step state
   for step in "${STEPS[@]}"; do
-    printf '%-20s %s\n' "$step" "$(step_state "$step")"
+    if is_ignored "$step"; then state=ignored; else state="$(step_state "$step")"; fi
+    printf '%-20s %s\n' "$step" "$state"
   done
 }
 
@@ -226,6 +248,7 @@ main() {
   readonly MODE
 
   load_steps
+  load_ignored
 
   if $list; then
     list_steps
@@ -240,6 +263,7 @@ main() {
     done
   else
     for step in "${STEPS[@]}"; do
+      if is_ignored "$step"; then continue; fi
       [ "$(step_state "$step")" = "done" ] || run+=("$step")
     done
   fi
