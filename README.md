@@ -13,3 +13,15 @@ Installs and configures a Debian machine for two Linux accounts: an admin accoun
 On its first run in each account, the git step asks for your git name and email.
 
 After you change a step, pull the change in both clones and run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows the step as `waiting`, because each account hashes the steps in its own clone.
+
+## Skip steps you do not want
+
+To skip a step in one account, list it in `.setupignore` at the root of that account's clone. Each clone has its own file, and git ignores it. Write one step per line as `name` or `NNNN-name`, and start a comment with `#`:
+
+```text
+# no games on this machine
+prismlauncher
+0240-flstudio
+```
+
+When you run `install.sh` without step names, it skips the listed steps, and `--list` shows them as `ignored`. A step you name on the command line still runs. An unknown name in the file stops `install.sh` with the file and line number.
