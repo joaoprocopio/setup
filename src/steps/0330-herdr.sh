@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/../lib.sh"
 
+needs yq "$HOME/.local/bin/yq"
+
 # Terminal workspace manager for AI coding agents, https://herdr.dev/tui/docs/install/
 curl -fsSL https://herdr.dev/install.sh | sh
 
