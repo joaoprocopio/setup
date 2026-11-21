@@ -12,7 +12,7 @@ Installs and configures a Debian machine for two Linux accounts: an admin accoun
 
 On its first run in each account, the git step asks for your git name and email.
 
-After you change a step, pull the change in both clones and run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows the step as `waiting`, because each account hashes the steps in its own clone.
+After you change a step, pull the change in both clones and run `./src/install.sh --admin` first. Until then, `./src/install.sh --no-admin --list` shows a step that calls `is_admin` as `waiting`, because `--no-admin` runs that step only after `--admin` has run the same version of it. A step without `is_admin` has no machine-wide part, so `--no-admin` runs it whether or not `--admin` has.
 
 ## Skip steps you do not want
 
@@ -25,3 +25,5 @@ prismlauncher
 ```
 
 When you run `install.sh` without step names, it skips the listed steps, and `--list` shows them as `ignored`. A step you name on the command line still runs. An unknown name in the file stops `install.sh` with the file and line number.
+
+If the admin account ignores a step that calls `is_admin`, the second account cannot run that step either, because the machine-wide part it needs is missing. `install.sh --no-admin` then fails that step with `run src/install.sh --admin name first`. A step without `is_admin` stays independent in each account.

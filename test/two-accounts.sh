@@ -112,13 +112,18 @@ expect_output "^0320-yq +done$" "admin --list shows yq done"
 as work ./src/install.sh --no-admin --list
 expect_output "^0320-yq +done$" "work --list shows yq done"
 
-as admin "echo '# edit' >>src/steps/0320-yq.sh"
-as work "echo '# edit' >>src/steps/0320-yq.sh"
+for account in admin work; do
+  as "$account" "echo '# edit' >>src/steps/0125-go.sh && echo '# edit' >>src/steps/0320-yq.sh"
+done
 
 as admin ./src/install.sh --admin --list
-expect_output "^0320-yq +changed$" "admin --list shows an edited step as changed"
+expect_output "^0125-go +changed$" "admin --list shows an edited step as changed"
 as work ./src/install.sh --no-admin --list
-expect_output "^0320-yq +waiting$" "work --list shows an edited step as waiting"
+expect_output "^0125-go +waiting$" "work --list shows an edited step with a machine-wide part as waiting"
+expect_output "^0320-yq +changed$" "work --list shows an edited home-only step as changed"
+
+as work ./src/install.sh --no-admin yq
+expect_exit 0 "work --no-admin runs an edited home-only step before --admin does"
 
 echo
 if [ "$FAILURES" -gt 0 ]; then

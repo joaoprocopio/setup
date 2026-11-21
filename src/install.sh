@@ -19,7 +19,8 @@ usage() {
 usage: src/install.sh --admin|--no-admin [--list] [step...]
 
   --admin     install machine-wide software with sudo, then set up your home
-  --no-admin  set up your home only, without sudo; --admin must run first
+  --no-admin  set up your home only, without sudo, after --admin installs the
+              machine-wide part of each step that has one
   --list      print each step and its state
   --help      print this help
 
@@ -135,11 +136,17 @@ marker_state() {
   fi
 }
 
-# Prints done, pending, changed, or waiting, which means --admin has not run this version yet.
+# A step that calls is_admin has a machine-wide part, which --admin installs before --no-admin can use it.
+has_admin_part() {
+  grep -qE '^[^#]*\bis_admin\b' "$STEPS_DIR/$1.sh"
+}
+
+# Prints done, pending, changed, or waiting, which means --admin has not run this version of a step with a machine-wide part.
 step_state() {
   local hash
   hash="$(step_hash "$1")"
-  if [ "$MODE" = no-admin ] && [ "$(marker_state "$(admin_marker "$1")" "$hash")" != "done" ]; then
+  if [ "$MODE" = no-admin ] && has_admin_part "$1" &&
+    [ "$(marker_state "$(admin_marker "$1")" "$hash")" != "done" ]; then
     echo waiting
   else
     marker_state "$(own_marker "$1")" "$hash"
