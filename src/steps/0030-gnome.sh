@@ -48,6 +48,7 @@ note "log out and back in to load the GNOME extensions"
 
 # Dark mode
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+gsettings set org.gnome.desktop.interface gtk-theme "Adwaita-dark"
 
 # Animations
 gsettings set org.gnome.desktop.interface enable-animations false
