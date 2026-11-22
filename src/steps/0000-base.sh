@@ -28,7 +28,7 @@ EOF
 
   # gui tools
   apt_install \
-    gimp qbittorrent vlc calibre simple-scan
+    gimp qbittorrent vlc calibre simple-scan filezilla
 
   # libraries
   apt_install \
