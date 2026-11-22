@@ -1,3 +1,3 @@
-- Build a CLI with clap, with decent code that scales. Its first features are the writing check and the nudge that points to the LSP.
-
-- Write a CLI that extracts my video transcripts.
+1. fazer sempre ter o english us e portuguese brazil dentro do teclado
+2. no mouse & touchpad, ja reduzir o Pointer Speed pra 0
+3. em touchpad mudar o scroll direction pra traditional

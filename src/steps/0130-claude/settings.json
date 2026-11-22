@@ -7,6 +7,8 @@
     "pr": "",
     "sessionUrl": false
   },
+  "language": "Português do Brasil",
+  "outputStyle": "Concise",
   "autoContinueAtUsageLimit": false,
   "autoMemoryEnabled": false,
   "awaySummaryEnabled": false,
