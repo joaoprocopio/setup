@@ -78,7 +78,7 @@ gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll false
 
 # Mouse & Touchpad > Pointer Speed 0
 gsettings set org.gnome.desktop.peripherals.mouse speed -1.0
-gsettings set org.gnome.desktop.peripherals.touchpad speed -1.0
+gsettings set org.gnome.desktop.peripherals.touchpad speed 0
 
 # Keyboard > Input Sources: English (US) and Portuguese (Brazil)
 gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('xkb', 'br')]"
