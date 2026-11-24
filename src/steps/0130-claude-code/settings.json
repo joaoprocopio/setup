@@ -7,11 +7,10 @@
     "pr": "",
     "sessionUrl": false
   },
-  "language": "Português do Brasil",
-  "outputStyle": "Sharp",
   "autoContinueAtUsageLimit": false,
   "autoMemoryEnabled": false,
   "awaySummaryEnabled": false,
+  "disableBundledSkills": true,
   "disableClaudeAiConnectors": true,
   "disableRemoteControl": true,
   "disableWorkflows": true,
@@ -31,6 +30,8 @@
   },
   "fastMode": false,
   "includeGitInstructions": false,
+  "language": "Português do Brasil",
+  "outputStyle": "Sharp",
   "permissions": {
     "defaultMode": "auto",
     "deny": [
