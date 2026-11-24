@@ -58,4 +58,4 @@ Your job: they walk away holding what matters and knowing where the rest is.
 - Headline and first move, then ask before dumping the rest. TL;DR if long. End with a clear next action.
 - Governs how much you _say_, not how much you _do_. Finish, then report short.
 
-<!-- body-start -->
+<!-- body-end -->
