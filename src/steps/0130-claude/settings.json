@@ -8,7 +8,7 @@
     "sessionUrl": false
   },
   "language": "Português do Brasil",
-  "outputStyle": "Concise",
+  "outputStyle": "Attention-kind",
   "autoContinueAtUsageLimit": false,
   "autoMemoryEnabled": false,
   "awaySummaryEnabled": false,
