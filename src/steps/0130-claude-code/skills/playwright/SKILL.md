@@ -58,10 +58,6 @@ Ordered by impact: the top rules sustain every rule below them. Read the rule fi
 | [config-timeout-budget](rules/config-timeout-budget.md)               | MEDIUM   |
 | [quarantine-with-issue](rules/quarantine-with-issue.md)               | MEDIUM   |
 
-## Per-project decisions
-
-Some choices are real tradeoffs that depend on the product, the identity provider, and the team’s infrastructure, so this skill does not decide them for you. When adopting the skill, work through [DECISIONS.md](DECISIONS.md) and record each choice in the project.
-
 ## Out of scope
 
 - **Visual regression by screenshot** (`toHaveScreenshot`): pixel baselines require identical rendering environments between generation and verification, which conflicts with running from any machine against any URL, and multiplies baselines across the device matrix. Targeted structural assertions (`toMatchAriaSnapshot`) cover part of the need with far more stability.

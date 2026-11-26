@@ -16,4 +16,4 @@ await test.step("confirms attendance and sees the success message", async () => 
 });
 ```
 
-Steps are not decoration. Without them a failure arrives as a bare selector error; with them it reads as “broke while confirming attendance”, which is the difference between a stack trace and a diagnosis. What language they are written in is decision 5 in [DECISIONS.md](../DECISIONS.md).
+Steps are not decoration. Without them a failure arrives as a bare selector error; with them it reads as “broke while confirming attendance”, which is the difference between a stack trace and a diagnosis.
