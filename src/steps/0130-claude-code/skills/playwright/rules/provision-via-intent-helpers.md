@@ -84,6 +84,6 @@ Five constraints hold that fixture together:
 - **`obtainToken` receives its credentials.** One account for the whole suite holds as long as nothing mutates the account itself, and every test already builds its own data, as described in [data-unique-identifiable](data-unique-identifiable.md). One account per worker, keyed by `workerInfo.parallelIndex`, becomes the target the moment tests start changing profile or settings. Because the credentials are injected, that is a change in the fixture and nowhere else.
 - **The API must be reachable in every target environment, under its own URL.** That belongs to the environment contract in [env-parametrize-only](env-parametrize-only.md), not to any single test.
 
-Where the credential itself comes from is not this rule’s call: it continues decision 1 in [DECISIONS.md](../DECISIONS.md). How this fixture combines with the ones other rules extend is in [fixtures-compose-explicitly](fixtures-compose-explicitly.md).
+How this fixture combines with the ones other rules extend is in [fixtures-compose-explicitly](fixtures-compose-explicitly.md).
 
 The API layer also enables **post-condition checks**: act through the UI, then verify the effect with a GET. That catches an optimistic interface reporting a save the backend never persisted.
