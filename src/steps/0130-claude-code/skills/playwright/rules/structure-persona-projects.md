@@ -1,15 +1,15 @@
 ---
-title: Emulate each persona’s real environment
+title: Emulate each persona's real environment
 impact: MEDIUM
 tags: [structure, projects, devices]
 ---
 
-Map each product persona to the devices and browsers it actually uses, and route tests by tag. For example, when guests answer on their phones and operators work at a desk, `@guest` runs on iPhone WebKit (which covers both Safari and Chrome on iOS) and Android Chromium, and `@admin` runs on Desktop Chrome.
+Map each product persona to the devices and browsers it actually uses, and route tests by tag. For example, when customers buy on their phones and operators work at a desk, `@customer` runs on iPhone WebKit (which covers both Safari and Chrome on iOS) and Android Chromium, and `@admin` runs on Desktop Chrome.
 
 ```ts
 projects: [
-  { name: "guest-ios", grep: /@guest/, use: { ...devices["iPhone 13"] } },
-  { name: "guest-android", grep: /@guest/, use: { ...devices["Pixel 5"] } },
+  { name: "customer-ios", grep: /@customer/, use: { ...devices["iPhone 13"] } },
+  { name: "customer-android", grep: /@customer/, use: { ...devices["Pixel 5"] } },
   { name: "admin-desktop", grep: /@admin/, use: { ...devices["Desktop Chrome"] } },
 ],
 ```
@@ -21,5 +21,5 @@ The full matrix runs on every execution. Cost grows linearly with test count, so
 State the emulation limits **in the config file itself**, so the team never counts on coverage that does not exist:
 
 - Desktop WebKit emulating an iPhone is not real iOS Safari.
-- Playwright’s Firefox supports neither `isMobile` nor touch events, so a “Firefox mobile” project tests the engine with a mobile viewport and user agent, and nothing more.
+- Playwright's Firefox supports neither `isMobile` nor touch events, so a "Firefox mobile" project tests the engine with a mobile viewport and user agent, and nothing more.
 - WebKit on Linux CI is not Safari. It is a port with its own graphics stack, sensitive to the runner image, and it raises internal errors that never appear on local macOS. Pin the official Docker image matched to the exact Playwright version, and treat a Playwright upgrade as an environment change.

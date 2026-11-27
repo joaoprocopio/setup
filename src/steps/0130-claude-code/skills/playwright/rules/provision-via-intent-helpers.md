@@ -11,50 +11,50 @@ Setup through the UI costs three ways. Every test pays browser cost for its own 
 **Incorrect** (setup through the UI):
 
 ```ts
-test("guest confirms attendance", async ({ page }) => {
-  await page.goto("/events/new");
-  await page.getByTestId("event-name").fill(name);
-  // ...12 more UI steps to reach an event with a guest...
+test("customer places an order", async ({ page }) => {
+  await page.goto("/products/new");
+  await page.getByTestId("product-name").fill(name);
+  // ...12 more UI steps to reach a cart with a product...
 });
 ```
 
 **Correct** (the UI appears only where the behavior is):
 
 ```ts
-test("guest confirms attendance", async ({ page, api }, testInfo) => {
-  const { inviteUrl } = await createEventWithGuest(api, {
-    guestName: uid(testInfo),
+test("customer places an order", async ({ page, api }, testInfo) => {
+  const { checkoutUrl } = await createCustomerWithCart(api, {
+    customerName: uid(testInfo),
   });
-  await page.goto(inviteUrl);
-  await page.getByTestId("confirm-attendance").click();
-  await expect(page.getByTestId("confirmation-banner")).toBeVisible();
+  await page.goto(checkoutUrl);
+  await page.getByTestId("checkout-place-order").click();
+  await expect(page.getByTestId("order-confirmation")).toBeVisible();
 });
 ```
 
-Three rules govern the layer. They name **roles**, not folders: where the files live is the adopting project’s call.
+Three rules govern the layer. They name **roles**, not folders: where the files live is the adopting project's call.
 
-- **The test never speaks HTTP.** A **service** speaks it; a **helper** says what the test means. Naming the two roles is what makes “tests never call the raw API” a claim a reader can check, instead of a verbal agreement.
-- **Helpers express intent**, such as `createEventWithGuests` or `provisionConfirmScenario`, never endpoints.
+- **The test never speaks HTTP.** A **service** speaks it; a **helper** says what the test means. Naming the two roles is what makes "tests never call the raw API" a claim a reader can check, instead of a verbal agreement.
+- **Helpers express intent**, such as `createCustomerWithCart` or `provisionRefundScenario`, never endpoints.
 - **A helper receives its service; it never imports one.** The fixture is the only place the two are wired, so pointing the suite at another backend is a change in one file.
 
 ```ts
 // the service: speaks HTTP, and knows nothing about why it was called
 export class BackendApi {
   constructor(private request: APIRequestContext) {}
-  createEvent(body: NewEvent) {
-    return this.request.post("events/", { data: body });
+  createProduct(body: NewProduct) {
+    return this.request.post("products/", { data: body });
   }
 }
 
 // the helper: says what the test means, and receives the service
-export const createEventWithGuest = (api: BackendApi, data: GuestData) => {
+export const createCustomerWithCart = (api: BackendApi, data: CartData) => {
   /* ... */
 };
 ```
 
 ## The request context for provisioning
 
-The API rarely shares the front end’s host or headers, which makes the built-in `request` fixture the wrong one: it inherits `baseURL` and `extraHTTPHeaders` from the config, and those belong to the web app. Build a dedicated context instead, logging in once per worker and disposing the context when the test ends:
+The API rarely shares the front end's host or headers, which makes the built-in `request` fixture the wrong one: it inherits `baseURL` and `extraHTTPHeaders` from the config, and those belong to the web app. Build a dedicated context instead, logging in once per worker and disposing the context when the test ends:
 
 ```ts
 export const test = base.extend<{ api: BackendApi }, { token: string }>({
@@ -78,7 +78,7 @@ export const test = base.extend<{ api: BackendApi }, { token: string }>({
 
 Five constraints hold that fixture together:
 
-- **`page.request` and `context.request` are banned for provisioning.** They read the browser’s cookie jar _and write to it_: a setup call answering with `Set-Cookie` rewrites the session mid-test, and the test then passes or fails on whether the backend happened to renew it. Use `playwright.request.newContext()`, which has an isolated jar. The `playwright` fixture is worker-scoped, since `PlaywrightWorkerArgs` is `{ playwright, browser }`, which is what lets a worker-scoped fixture build one.
+- **`page.request` and `context.request` are banned for provisioning.** They read the browser's cookie jar _and write to it_: a setup call answering with `Set-Cookie` rewrites the session mid-test, and the test then passes or fails on whether the backend happened to renew it. Use `playwright.request.newContext()`, which has an isolated jar. The `playwright` fixture is worker-scoped, since `PlaywrightWorkerArgs` is `{ playwright, browser }`, which is what lets a worker-scoped fixture build one.
 - **One login per worker, as long as the token outlives the run.** With 200 tests on 8 workers that is 8 logins instead of 200, and a token is read-only, so sharing it carries none of the mutation hazard a shared `storageState` does. If the token expires before a worker finishes, dozens of tests fail at once with HTTP 401 and it reads as generalized flakiness. At that point the scope drops back to per test, or refresh is added.
 - **What crosses to the browser is the token, not the storage state.** The official docs show `apiRequestContext.storageState()` as the bridge, and it carries only what the backend set with `Set-Cookie`. Where the front end writes the session from JavaScript, that state comes back empty. A session-cookie backend is the one case where passing `storageState` is right.
 - **`obtainToken` receives its credentials.** One account for the whole suite holds as long as nothing mutates the account itself, and every test already builds its own data, as described in [data-unique-identifiable](data-unique-identifiable.md). One account per worker, keyed by `workerInfo.parallelIndex`, becomes the target the moment tests start changing profile or settings. Because the credentials are injected, that is a change in the fixture and nowhere else.

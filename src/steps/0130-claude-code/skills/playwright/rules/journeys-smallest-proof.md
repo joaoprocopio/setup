@@ -11,9 +11,9 @@ Then keep each journey as small as its proof allows. Every extra step and every 
 Name the stages with `test.step()`, so the trace reports where the journey broke:
 
 ```ts
-await test.step("confirms attendance and sees the success message", async () => {
-  // …
+await test.step("places the order and sees the confirmation", async () => {
+  // ...
 });
 ```
 
-Steps are not decoration. Without them a failure arrives as a bare selector error; with them it reads as “broke while confirming attendance”, which is the difference between a stack trace and a diagnosis.
+Steps are not decoration. Without them a failure arrives as a bare selector error; with them it reads as "broke while placing the order", which is the difference between a stack trace and a diagnosis.

@@ -4,7 +4,7 @@ impact: HIGH
 tags: [test-data, isolation, parallelism]
 ---
 
-Every piece of data a test creates carries the suite’s data prefix, here `E2E-`, which marks it as synthetic suite data and makes it findable with one search. Never reuse fixed data such as “test guest” across tests: shared data is a hidden dependency. Missing isolation is the most common cause of non-deterministic failure, because state left by one test contaminates the next, the failure moves with execution order, and the failing test is rarely the one carrying the bug.
+Every piece of data a test creates carries the suite's data prefix, here `E2E-`, which marks it as synthetic suite data and makes it findable with one search. Each test creates its own data, because fixed data such as "test customer" shared across tests is a hidden dependency. Missing isolation is the most common cause of non-deterministic failure, because state left by one test contaminates the next, the failure moves with execution order, and the failing test is rarely the one carrying the bug.
 
 Compose each identifier from two parts: traceable context from `TestInfo`, and a cryptographically random numeric sequence that guarantees uniqueness across parallel tests and simultaneous runs.
 
@@ -45,4 +45,4 @@ Two worker-lifecycle traps follow:
 - For per-worker resources such as an account pool, key by `parallelIndex` rather than `workerIndex`, because `workerIndex` changes when a worker restarts after a failure.
 - Avoid expensive provisioning in `beforeAll`: Playwright replaces the worker after any failure, the hook re-runs on the new worker, and every retry pays the cost again.
 
-Time is shared state too. Assumptions about “today”, days of the month, or daylight saving time produce suites that fail only near midnight or on specific dates. Pin `timezoneId` and `locale` in the config, and `TZ` in the runner process.
+Time is shared state too. Assumptions about "today", days of the month, or daylight saving time produce suites that fail only near midnight or on specific dates. Pin `timezoneId` and `locale` in the config, and `TZ` in the runner process.

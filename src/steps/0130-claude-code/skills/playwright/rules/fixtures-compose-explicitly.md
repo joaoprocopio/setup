@@ -8,7 +8,7 @@ The fixture file is where every layer of the suite is wired, and both of its fai
 
 ## One `test`, one chain
 
-Several rules extend the same fixtures: `page` is overridden to disable animations, the provisioning service is injected, a persona’s session is planted. Extending the base twice produces two unrelated `test` objects, and a spec imports one of them, so everything the other one set up never runs.
+Several rules extend the same fixtures: `page` is overridden to disable animations, the provisioning service is injected, a persona's session is planted. Extending the base twice produces two unrelated `test` objects, and a spec imports one of them, so everything the other one set up never runs.
 
 **Incorrect** (two chains; the spec gets whichever it imported):
 
@@ -44,4 +44,4 @@ test("operator opens the dashboard", async ({ page, session }) => {
 
 Add a `void session;` line only where a linter actually complains, and check that it does before writing it.
 
-Drop the name and the edge disappears with it. The fixture stops running, the test still executes, and the assertion that depended on that state either meets the application’s default or reads what another test left behind.
+Drop the name and the edge disappears with it. The fixture stops running, the test still executes, and the assertion that depended on that state either meets the application's default or reads what another test left behind.

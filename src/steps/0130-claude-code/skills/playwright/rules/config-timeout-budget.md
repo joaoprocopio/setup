@@ -13,9 +13,9 @@ use: {
 },
 ```
 
-The defaults of 30s per test and 5s per `expect` work as a starting point. In CI, add `globalTimeout` to protect the pipeline’s total budget.
+The defaults of 30s per test and 5s per `expect` work as a starting point. In CI, add `globalTimeout` to protect the pipeline's total budget.
 
-**Incorrect** (a slow API surfaces as “Test timeout of 30000ms exceeded” with no culprit):
+**Incorrect** (a slow API surfaces as "Test timeout of 30000ms exceeded" with no culprit):
 
 ```ts
 // no actionTimeout, so the click absorbs the whole test budget

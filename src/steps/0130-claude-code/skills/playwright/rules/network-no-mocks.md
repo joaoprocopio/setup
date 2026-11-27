@@ -8,7 +8,7 @@ Every test exercises the real backend of the targeted environment, end to end. A
 
 Three uses of `page.route()` differ, and only the first breaks this rule:
 
-- **Faking your own endpoint’s success**: banned. The test then proves the client against a guess at the server, not against the server.
+- **Faking your own endpoint's success**: banned. The test then proves the client against a guess at the server, not against the server.
 - **Injecting a fault the real stack cannot produce on demand**, such as an HTTP 500, an aborted request, or a third party being down: acceptable when the test asserts on that fault. Fake only the response that assertion depends on.
 - **Holding or delaying a real response to observe an in-flight state**, such as a spinner or a disabled submit button: acceptable. Fetch the real response with `route.fetch()` and fulfill it once the test has asserted the in-flight state, so the server still answers.
 

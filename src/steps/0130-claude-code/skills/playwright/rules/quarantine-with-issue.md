@@ -9,8 +9,8 @@ A broken test leaves the suite by fix or by removal, never by being forgotten. B
 **Incorrect:**
 
 ```ts
-test.skip("guest confirms attendance", async ({ page }) => {
-  /* … */
+test.skip("customer places an order", async ({ page }) => {
+  /* ... */
 });
 test.skip(process.env.TARGET === "staging", "broken on staging");
 ```
@@ -19,7 +19,7 @@ test.skip(process.env.TARGET === "staging", "broken on staging");
 
 ```ts
 test.fixme(
-  "guest confirms attendance",
+  "customer places an order",
   {
     annotation: {
       type: "issue",
@@ -27,7 +27,7 @@ test.fixme(
     },
   },
   async ({ page }) => {
-    /* … */
+    /* ... */
   },
 );
 
@@ -37,13 +37,11 @@ test.skip(
 );
 ```
 
-Setting `forbidOnly: !!process.env.CI` blocks a forgotten `test.only` from silently shrinking the suite to one test.
-
 Audit the quarantine list every cycle, because quarantine without a deadline is removal in disguise. A ceiling works as a default: 8 quarantined tests, or one week to fix or delete.
 
 ## Known bugs run under `test.fail`
 
-A test that documents a known bug asserts the correct behavior under `test.fail()` with an issue annotation. It never asserts today’s buggy behavior as if it were correct, because that test stays green while the bug lives and turns red when someone fixes it, which reads as a regression. Playwright runs a `test.fail` test, counts its failure as a pass, and reports “Expected to fail, but passed.” as a failure the moment the bug is fixed.
+A test that documents a known bug asserts the correct behavior under `test.fail()` with an issue annotation. It never asserts today's buggy behavior as if it were correct, because that test stays green while the bug lives and turns red when someone fixes it, which reads as a regression. Playwright runs a `test.fail` test, counts its failure as a pass, and reports "Expected to fail, but passed." as a failure the moment the bug is fixed.
 
 **Incorrect** (pins the bug, with no issue):
 
@@ -63,10 +61,10 @@ test.fail(
     },
   },
   async ({ page }) => {
-    /* … */
+    /* ... */
     await expect(cart.total()).toHaveText("3");
   },
 );
 ```
 
-Any failure satisfies `test.fail`, a wrong locator included. Run the test once without the modifier and check that it fails on the bug’s assertion.
+Any failure satisfies `test.fail`, a wrong locator included. Run the test once without the modifier and check that it fails on the bug's assertion.
