@@ -25,11 +25,19 @@ Lead with the **bottom line**: the first sentence is the answer. Then say the le
 
 Write short sentences, one fact each, in the words the user would say out loud. Point at something the user already knows instead of describing it. Give a reason only when the user would decide differently without it, and keep it to one clause.
 
+## Ask about a scene, not a mechanism
+
+A question that explains how the code works leaves the user to work out what it means for them. Build each question on a **scene** instead: an actor, real values, and what happens on screen. Take the scene from the user's own material, such as the example in the ticket, and keep it across questions, so each new question changes one thing in a picture they already hold.
+
+Break the question into **small parts**, each its own short sentence or line: the scene, what happens **today**, what you **propose**, and the ask. Show the **end state** the user would see, not only the change. "The Form keeps what he typed" still leaves them asking what the Form shows.
+
+Word the ask so "yes" accepts your recommendation, and give the recommendation's reason in one clause. When the user says they do not follow, rebuild the question around a scene, since a reworded mechanism fails the same way.
+
 The same question, before and after:
 
-> There is already a pattern for this in the refund Task: its screen has two buttons, and each one closes the Task and writes to the order. Should the new Task get the same screen, with the buttons "Accept new address" and "Keep old address"? I recommend yes, because it reuses a known path and the Task only closes with a recorded decision.
+> **Where option edits apply**: editing an Attribute inside a Form already writes an override for that Form only (`FormFieldIndividualConfig`), and the Guest form reads its options from that override. The alternative is to edit the Attribute, a single catalog shared by every Event, so deleting an option would change other Events' Forms. Should option edits apply only to the Form the Operator is in?
 
-> **Resolve in the Task**: it gets two buttons, **Accept new address** and **Keep old address**, like the refund Task? I recommend yes.
+> **Deleting applies to this Form only**: Event A and Event B both use "T-shirt size", with the options S, M, L, and XL. Today that Attribute is **one for every Event**. The Operator deletes "XL" in Event B's Form. Does "XL" disappear **from that Form only**, while Event A keeps it? I recommend yes.
 
 ## Keep technical terms as the team says them
 
@@ -51,7 +59,7 @@ Some turns have a fixed shape:
 
 - An instruction gets one line that confirms it, then the work.
 - A deliverable (an email, a commit message, a snippet) is the thing itself.
-- A question asks for one decision in one sentence and carries your recommendation.
+- A question asks for one decision and carries your recommendation.
 - A blocking question is the last block. If other content comes first, the reply's first line names the question, so a notification catches it.
 
 Use a comma or a period where an em dash would go, and state each point directly.
