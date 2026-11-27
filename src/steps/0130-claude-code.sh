@@ -66,4 +66,5 @@ json_merge "$ASSETS/claude.json" ~/.claude.json
 rc_block ~/.zshrc <<'EOF'
 alias claude='command claude --system-prompt-file "$HOME/.claude/SYSTEM.md"'
 alias haiku='claude --model haiku'
+alias sonnet='claude --model sonnet'
 EOF
