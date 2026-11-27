@@ -39,11 +39,11 @@ test.skip(
 
 Setting `forbidOnly: !!process.env.CI` blocks a forgotten `test.only` from silently shrinking the suite to one test.
 
-Audit the quarantine list every cycle, because quarantine without a deadline is removal in disguise. Fowler’s ceiling works as a default: 8 quarantined tests, or one week to fix or delete.
+Audit the quarantine list every cycle, because quarantine without a deadline is removal in disguise. A ceiling works as a default: 8 quarantined tests, or one week to fix or delete.
 
 ## Known bugs run under `test.fail`
 
-A test that documents a known bug asserts the correct behavior under `test.fail()` with an issue annotation. It never asserts today’s buggy behavior as if it were correct, because that test stays green while the bug lives and turns red when someone fixes it, which reads as a regression. Playwright runs a `test.fail` test, counts its failure as a pass, and reports “Expected to fail, but passed.” as a failure the moment the bug is fixed. That is the strict xfail pytest offers for “a bug not yet fixed” ([pytest: skip and xfail](https://docs.pytest.org/en/stable/how-to/skipping.html)).
+A test that documents a known bug asserts the correct behavior under `test.fail()` with an issue annotation. It never asserts today’s buggy behavior as if it were correct, because that test stays green while the bug lives and turns red when someone fixes it, which reads as a regression. Playwright runs a `test.fail` test, counts its failure as a pass, and reports “Expected to fail, but passed.” as a failure the moment the bug is fixed.
 
 **Incorrect** (pins the bug, with no issue):
 

@@ -4,7 +4,7 @@ impact: MEDIUM
 tags: [waiting, animations, stability]
 ---
 
-Animations are a primary source of `element is not stable`. Two nearly identical frames satisfy Playwright’s stability check, and an easing curve that decelerates mid-animation produces exactly that: Playwright clicks, and the element keeps moving. The upstream issue was closed as expected behavior.
+Animations are a primary source of `element is not stable`. Two nearly identical frames satisfy Playwright’s stability check, and an easing curve that decelerates mid-animation produces exactly that: Playwright clicks, and the element keeps moving. Playwright treats this as expected behavior.
 
 Fix it at the source with a fixture that injects CSS zeroing `animation-duration`, `transition-duration`, and `scroll-behavior` in every document. That makes actionability deterministic without `force: true`, which would skip the overlap checks entirely.
 

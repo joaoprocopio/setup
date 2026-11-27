@@ -6,7 +6,7 @@ tags: [journeys, flakiness, diagnosis]
 
 Test by **user journeys**, prioritized by impact of breakage multiplied by frequency of use, and start with the paths whose failure in production causes immediate business damage. Edge cases and form validations belong to the cheaper layers, while E2E covers the main flow and the few high-risk variations.
 
-Then keep each journey as small as its proof allows. Google measured **0.5% flakiness in small tests against 14% in large ones**: every extra step and every extra service is another source of non-determinism, and a journey that proves three things fails for three reasons.
+Then keep each journey as small as its proof allows. Every extra step and every extra service is another source of non-determinism, and a journey that proves three things fails for three reasons.
 
 Name the stages with `test.step()`, so the trace reports where the journey broke:
 

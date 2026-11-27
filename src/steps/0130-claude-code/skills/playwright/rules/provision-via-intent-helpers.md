@@ -4,7 +4,7 @@ impact: HIGH
 tags: [test-data, setup, api]
 ---
 
-Every test builds its own world before acting. Build that world through **intent helpers**, functions named for what the test means and provisioned via API underneath, and open the UI only for the behavior under test. Playwright’s own API-testing docs describe this pattern: setup runs in seconds, and failures point at the right place.
+Every test builds its own world before acting. Build that world through **intent helpers**, functions named for what the test means and provisioned via API underneath, and open the UI only for the behavior under test. API setup runs in seconds, and its failures point at the right place.
 
 Setup through the UI costs three ways. Every test pays browser cost for its own setup, a bug in a base journey cascades into every test that uses it as setup, and every extra minute of UI adds another chance to flake.
 
@@ -39,7 +39,7 @@ Three rules govern the layer. They name **roles**, not folders: where the files 
 
 ```ts
 // the service: speaks HTTP, and knows nothing about why it was called
-export class RsvpApi {
+export class BackendApi {
   constructor(private request: APIRequestContext) {}
   createEvent(body: NewEvent) {
     return this.request.post("events/", { data: body });
@@ -47,7 +47,7 @@ export class RsvpApi {
 }
 
 // the helper: says what the test means, and receives the service
-export const createEventWithGuest = (api: RsvpApi, data: GuestData) => {
+export const createEventWithGuest = (api: BackendApi, data: GuestData) => {
   /* ... */
 };
 ```
@@ -57,7 +57,7 @@ export const createEventWithGuest = (api: RsvpApi, data: GuestData) => {
 The API rarely shares the front end’s host or headers, which makes the built-in `request` fixture the wrong one: it inherits `baseURL` and `extraHTTPHeaders` from the config, and those belong to the web app. Build a dedicated context instead, logging in once per worker and disposing the context when the test ends:
 
 ```ts
-export const test = base.extend<{ api: RsvpApi }, { token: string }>({
+export const test = base.extend<{ api: BackendApi }, { token: string }>({
   token: [
     async ({ playwright }, use) => {
       await use(await obtainToken(playwright, credentials()));
@@ -70,7 +70,7 @@ export const test = base.extend<{ api: RsvpApi }, { token: string }>({
       baseURL: requiredEnv("E2E_API_URL"),
       extraHTTPHeaders: { Authorization: `Bearer ${token}` },
     });
-    await use(new RsvpApi(context));
+    await use(new BackendApi(context));
     await context.dispose();
   },
 });

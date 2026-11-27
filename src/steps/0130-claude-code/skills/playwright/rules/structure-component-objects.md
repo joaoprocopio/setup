@@ -6,7 +6,7 @@ tags: [structure, components, selectors]
 
 Everything a test knows about the interface, meaning a URL, a selector, or an interaction, lives in a **component object** and never in the spec. The unit is the **component**, not the page: a form that appears on five screens is written once, and components nest the way the application’s own components do.
 
-This diverges from the official Page Object Model guidance, which organizes by page. Slack’s suite made the same move, “treating the application as components rather than pages”, and measured a 60% flakiness reduction after migrating. That is the incident already cited in [select-by-test-id](select-by-test-id.md). Organizing by page copies a shared component once per screen that shows it.
+This diverges from the official Page Object Model guidance, which organizes by page. Organizing by page copies a shared component once per screen that shows it.
 
 The layer also turns _scoped by region_ into structure instead of a naming convention: a nested component receives its parent’s locator and can only see inside it, so an ambiguous test id trips strict mode where it is declared.
 
@@ -56,7 +56,7 @@ export class GuestForm {
 The spec then reads as the journey, with no selector in sight:
 
 ```ts
-// journeys/0001-guest-confirms-attendance.spec.ts
+// guest-confirms-attendance.spec.ts
 const guests = new GuestsPage(page);
 await guests.open(eventId);
 await guests.form().fillName("Ana");
@@ -69,7 +69,7 @@ Seven rules govern the layer:
 - **The route component owns the URL.** A route change is then fixed in one file, for the same reason the selector moved in here.
 - **Every accessor is a method, with no getters and no fields.** The constructor stores its dependency and each accessor computes on call. That costs nothing, because a `Locator` resolves nothing until it is used, and it removes the trap where a class field initializer runs before the constructor body and sees an unassigned root.
 - **Element accessors return `Locator`; child accessors return the child component.** Assertions against a child go through its root: `expect(guests.form().root()).toBeVisible()`. Typing `.root()` is the whole price of never maintaining a custom matcher per assertion you want to use.
-- **Components act; tests verify.** No verification inside a component, because “The UI Abstraction is stateless. The test should maintain the state and validate against it” ([Slack Engineering](https://slack.engineering/scaling-end-to-end-user-interface-tests/)). A component that asserts moves the proof out of the spec, and the spec stops saying what it proves. The one exception is a readiness wait, described below.
+- **Components act; tests verify.** No verification inside a component: the component holds no state about what the test expects, so the spec keeps that state and checks against it. A component that asserts moves the proof out of the spec, and the spec stops saying what it proves. The one exception is a readiness wait, described below.
 - **A component only touches its own section.** It gets its parent’s locator and never reaches outside it.
 - **No chaining.** An async method returning `this` returns `Promise<this>`, and chaining becomes `await (await x.a()).b()`. Cypress chains because it queues commands; Playwright awaits them.
 
@@ -77,7 +77,7 @@ Create a component on the second test that needs it, not before. A screen touche
 
 ## Readiness waits versus verification
 
-A component may wait for the state its own next step needs. Selenium allows a page object one check, “to verify that the page, and possibly critical elements on the page, were loaded correctly” ([Page object models](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/)). Fowler allows assertions that “check the invariants of a page or the application at this point, rather than specific things that a test is probing” ([PageObject](https://martinfowler.com/bliki/PageObject.html)). To tell the two apart, ask whether the spec would claim less without the line. If it would, the line is a verification and belongs in the spec.
+A component may wait for the state its own next step needs, such as a page or a field that has finished loading. That is a readiness wait, not a verification. To tell the two apart, ask whether the spec would claim less without the line. If it would, the line is a verification and belongs in the spec.
 
 Write a readiness wait with `locator.waitFor()` when one of its states (attached, detached, visible, hidden) expresses it. When none does, a component may wait through `expect`: `toHaveValue` for a field that loads its value, `toBeEnabled` for a control enabled late, `expect.poll` for a condition outside the DOM.
 
@@ -88,11 +88,11 @@ async renameTo(value: string) {
 }
 ```
 
-When a component holds a verification, move it back to the spec unchanged. Rewriting it as `waitFor()` or `filter({ hasText })` to keep it in the component silently weakens it, as [wait-web-first-assertions](wait-web-first-assertions.md) lists. Playwright’s own [Page Object Model example](https://playwright.dev/docs/pom) calls `expect` inside a page-object method but states no rule either way, so it does not override this one.
+When a component holds a verification, move it back to the spec unchanged. Rewriting it as `waitFor()` or `filter({ hasText })` to keep it in the component silently weakens it, as [wait-web-first-assertions](wait-web-first-assertions.md) lists. Playwright’s Page Object Model example asserts inside a page object, and this rule still holds.
 
 ## The page-wide notice
 
-A third kind of object fits neither type: the **page-wide notice**, meaning the toast, snackbar, or status message the application paints loose on the screen instead of inside the region that triggered it. It is not a route, because it has no URL. And it is not nested: the pilot suite scoped one to the triggering page’s own container and **40 of its 50 guest tests broke**, because the application swaps the two regions rather than nesting them.
+A third kind of object fits neither type: the **page-wide notice**, meaning the toast, snackbar, or status message the application paints loose on the screen instead of inside the region that triggered it. It is not a route, because it has no URL. And it is not nested: scoping it to the triggering region’s container breaks every test where the application swaps the two regions rather than nesting them.
 
 Two exits are honest, and which one to take is the adopting project’s call:
 

@@ -4,15 +4,15 @@ impact: MEDIUM
 tags: [cleanup, teardown, hygiene]
 ---
 
-Test correctness never depends on cleanup: each test creates its own world and ignores leftovers from others. Cleanup is environment hygiene, and it runs as a **janitor** in `globalSetup`, sweeping every record carrying the `E2E-` prefix that earlier runs left. The current run’s data stays until the next run starts, so a failed run keeps its data for investigation. Cypress gives the same advice: “Clean up state before tests run”, because “Dangling state is your friend” ([Cypress best practices](https://docs.cypress.io/app/core-concepts/best-practices)).
+Test correctness never depends on cleanup: each test creates its own world and ignores leftovers from others. Cleanup is environment hygiene, and it runs as a **janitor** in `globalSetup`, sweeping every record that carries the suite’s data prefix and that earlier runs left. The current run’s data stays until the next run starts, so a failed run keeps its data for investigation.
 
-The sweep runs before the tests because nothing after them knows whether the run failed. `globalTeardown` receives only the config, a teardown project runs even when tests or setup fail (the Playwright 1.65 source shows this, and the docs do not say), and no documented API tells either one the run’s result. A janitor at the end can only sweep every time, evidence included, or never. If the sweep must run at the end, delete only records older than the longest run, so the latest run’s data survives.
+The sweep runs before the tests because nothing after them knows whether the run failed. `globalTeardown` receives only the config, a teardown project runs even when tests or setup fail, and no documented API tells either one the run’s result. A janitor at the end can only sweep every time, evidence included, or never. If the sweep must run at the end, delete only records older than the longest run, so the latest run’s data survives.
 
 Four rules complete the design:
 
 - Against production, the sweep also runs at the end of every run, this run’s data included, because synthetic data cannot stay there. The trace and the report are the evidence.
 - The sweep deletes the data of any run still in flight, so it assumes one run per environment at a time, as described in [env-parametrize-only](env-parametrize-only.md).
-- The same janitor code exists as a standalone script (`npm run e2e:janitor`) to sweep on demand, for example after a production run killed by crash or job timeout, since no teardown runs after `kill -9`.
+- The janitor code also runs as a standalone script, to sweep on demand, for example after a production run killed by a crash or a job timeout, since no teardown runs after `kill -9`.
 - Individual tests do **not** tear down their data. Per-test teardown skips a crash, deletes the evidence of failures, and adds cost to every test.
 
 **Incorrect** (per-test teardown deletes evidence and skips a crash):

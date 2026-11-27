@@ -25,6 +25,7 @@ await page.getByTestId("submit").click();
 **Correct** (the same failure names the action that blew its share):
 
 ```ts
-// actionTimeout: 15_000 in config, so the failure reads "click exceeded 15000ms"
+// actionTimeout: 15_000 in config, so the failure reads
+// "locator.click: Timeout 15000ms exceeded"
 await page.getByTestId("submit").click();
 ```

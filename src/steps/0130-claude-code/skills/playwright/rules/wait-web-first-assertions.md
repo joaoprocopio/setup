@@ -37,9 +37,9 @@ Enable `@typescript-eslint/no-floating-promises` as an **error**. A forgotten `a
 
 A web-first assertion is an `await expect(locator).toX()` call, and nothing else is. `locator.waitFor()`, `locator.filter({ hasText })`, `isVisible()`, and `textContent()` verify nothing, even when they appear to check the same thing. Rewriting `await expect(x).toHaveText(T)` as `await x.filter({ hasText: T }).waitFor()` changes five things:
 
-- **Predicate**: `toHaveText` matches the whole text, case-sensitive, after whitespace normalization. `filter({ hasText })` matches a case-insensitive substring and has no `exact` option ([`locator.filter`](https://playwright.dev/docs/api/class-locator#locator-filter)), so `"Confirmed"` passes on “Not confirmed”.
+- **Predicate**: `toHaveText` matches the whole text, case-sensitive, after whitespace normalization. `filter({ hasText })` matches a case-insensitive substring and has no `exact` option, so `"Confirmed"` passes on “Not confirmed”.
 - **State**: `toHaveText` needs the element attached, not visible, and passes on a `display:none` element. `waitFor()` waits for visible by default. To claim the user sees the text, also assert `toBeVisible()`.
-- **Timeout**: an assertion waits `expect.timeout`, 5s by default. `waitFor()` waits `actionTimeout`, whose default `0` means no limit ([`locator.waitFor`](https://playwright.dev/docs/api/class-locator#locator-wait-for)), so a failed wait runs until the test timeout.
+- **Timeout**: an assertion waits `expect.timeout`, 5s by default. `waitFor()` waits `actionTimeout`, whose default `0` means no limit, so a failed wait runs until the test timeout.
 - **Ambiguity**: a locator that matches two elements fails `toHaveText` at once with a strict-mode violation. The filter narrows the matches to the one holding the text, so the ambiguous locator passes.
 - **Diagnosis**: a failed assertion prints Expected, Received, and every unexpected value it saw, headed by the custom `expect(x, "message")` text if you passed one. A failed `waitFor()` prints “Timeout exceeded” and never shows the text it found.
 

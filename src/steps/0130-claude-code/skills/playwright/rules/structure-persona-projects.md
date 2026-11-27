@@ -4,7 +4,7 @@ impact: MEDIUM
 tags: [structure, projects, devices]
 ---
 
-Map each product persona to the devices and browsers it actually uses, and route tests by tag. Guests respond on their phones, so `@guest` runs on iPhone WebKit (which covers both Safari and Chrome on iOS), Android Chromium, and Firefox. Operators work on desktop, so `@admin` runs on Desktop Chrome.
+Map each product persona to the devices and browsers it actually uses, and route tests by tag. For example, when guests answer on their phones and operators work at a desk, `@guest` runs on iPhone WebKit (which covers both Safari and Chrome on iOS) and Android Chromium, and `@admin` runs on Desktop Chrome.
 
 ```ts
 projects: [

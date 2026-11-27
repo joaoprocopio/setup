@@ -6,15 +6,15 @@ tags: [selectors, test-ids, contracts]
 
 Use `getByTestId()` as the default selector and put the `data-testid` attributes in the application code. Test ids form a contract between the app and the suite, and the suite enforces it by running on every change: removing or renaming a test id breaks the test that depends on it, and the red build is the warning. No parallel tracking document is needed.
 
-This deliberately diverges from the official Playwright guidance, which prioritizes `getByRole()` with an accessible name. Three real incidents drive the divergence:
+This deliberately diverges from the official Playwright guidance, which prioritizes `getByRole()` with an accessible name. Three failure modes drive the divergence:
 
 - Browser auto-translation rewrites DOM text and breaks any text-based selector in a non-English locale.
 - Repeated labels on the same screen force positional selection with `nth()`, which breaks when layout changes.
-- Copy changes by product decision, not by engineering decision. Slack’s first suite broke on unrelated frontend changes because its selectors were coupled to CSS classes. Moving to dedicated `data-qa` attributes, as one part of a broader UI abstraction, cut flakiness by 60%.
+- Copy changes by product decision, not by engineering decision, so a text selector breaks on a change no engineer made.
 
 The cost stays explicit: `getByRole` verifies for free that the element is semantically accessible, while `getByTestId` verifies nothing beyond the attribute. Accessibility verification is out of this suite’s scope and belongs to a separate effort.
 
-A test id also verifies nothing about the copy. When the text is part of what the test claims, select by test id and assert the text with `toHaveText`. Cypress’s rule of thumb decides which case applies: “If the content of the element changed would you want the test to fail?” ([Cypress best practices](https://docs.cypress.io/app/core-concepts/best-practices)). Replacing `getByText("Confirmed", { exact: true })` with `getByTestId(...)` and `toBeVisible()` silently drops the copy check.
+A test id also verifies nothing about the copy. When the text is part of what the test claims, select by test id and assert the text with `toHaveText`. The text is part of the claim when the test should fail if the copy changed. Replacing `getByText("Confirmed", { exact: true })` with `getByTestId(...)` and `toBeVisible()` silently drops the copy check.
 
 ```ts
 await expect(page.getByTestId("order-status")).toHaveText("Confirmed");

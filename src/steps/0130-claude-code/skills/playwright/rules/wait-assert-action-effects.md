@@ -4,7 +4,7 @@ impact: CRITICAL
 tags: [waiting, hydration, race-conditions]
 ---
 
-Playwright’s auto-wait verifies visibility, stability, and occlusion, never the existence of an event handler. In server-side rendered (SSR) apps a button looks ready before JavaScript attaches its listeners, and the docs admit that “Playwright will do its job, but the click won’t have any effect”. The click before hydration is lost **without any error**.
+Playwright’s auto-wait verifies visibility, stability, and occlusion, never the existence of an event handler. In server-side rendered (SSR) apps a button looks ready before JavaScript attaches its listeners, so a click before hydration is lost **without any error**.
 
 The runner cannot prove the app reacted, so your assertion must. Follow every meaningful action with a web-first assertion of its effect. That turns a hydration race into a local, diagnosable failure instead of a mysterious one three steps later.
 
@@ -22,7 +22,7 @@ await page.getByTestId("guest-form-submit").click();
 await expect(page.getByTestId("confirmation-banner")).toBeVisible();
 ```
 
-Four related traps, all documented upstream:
+Four related traps:
 
 - **“It works if I add a delay” is a diagnosis, not a fix.** The delay that appears to fix a lost click proves the race exists. The real fix belongs in the product, where controls are born `disabled` until hydration completes, or in asserting a deterministic readiness signal.
 - **Lazy content shifts layout between aim and click**: Playwright clicks a valid neighbor, with no error. Assert the state that stabilizes the page first (skeleton gone, list loaded) and treat layout shift as a product bug.
@@ -31,11 +31,11 @@ Four related traps, all documented upstream:
 
 ## Add a ready signal when the UI shows none
 
-When nothing on screen says the data has loaded, add a signal to the application: a test id or attribute that appears only once the data has rendered, asserted with `toBeVisible()` or `toHaveAttribute()`. A `waitForResponse` proves the request finished, not that the UI rendered its result. Fowler asks the same of any provider you build: implement “some way of indicating that it’s done … Even if only the testing code uses it, it’s worth it” ([Eradicating Non-Determinism in Tests](https://martinfowler.com/articles/nonDeterminism.html)).
+When nothing on screen says the data has loaded, add a signal to the application: a test id or attribute that appears only once the data has rendered, asserted with `toBeVisible()` or `toHaveAttribute()`. A `waitForResponse` proves the request finished, not that the UI rendered its result. The signal is worth adding even when only the tests read it.
 
 ## Anchor every negative assertion
 
-`toHaveCount(0)`, `not.toBeVisible()`, `toBeHidden()`, `not.toBeAttached()`, and `not.toBeInViewport()` pass at once on a locator that matches nothing. A check that something did not appear passes before the application had time to show it, and any of them passes forever on a misspelled or renamed test id. The other `not.` matchers, such as `not.toHaveText()` and `not.toBeEnabled()`, fail on a missing element with “element(s) not found”. The docs do not state this split; the Playwright 1.65 source shows it. Cypress warns that negative assertions “may pass for reasons you weren’t expecting” ([Assertions](https://docs.cypress.io/app/references/assertions)).
+`toHaveCount(0)`, `not.toBeVisible()`, `toBeHidden()`, `not.toBeAttached()`, and `not.toBeInViewport()` pass at once on a locator that matches nothing. A check that something did not appear passes before the application had time to show it, and any of them passes forever on a misspelled or renamed test id. The other `not.` matchers, such as `not.toHaveText()` and `not.toBeEnabled()`, fail on a missing element with “element(s) not found”.
 
 Give each such assertion two anchors:
 

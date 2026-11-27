@@ -16,13 +16,13 @@ Several rules extend the same fixtures: `page` is overridden to disable animatio
 // one file
 export const test = base.extend({ page: /* animations disabled */ });
 // another file
-export const test = base.extend<{ api: RsvpApi }>({ api: /* provisioning */ });
+export const test = base.extend<{ api: BackendApi }>({ api: /* provisioning */ });
 ```
 
 **Correct** (one chain, exported once):
 
 ```ts
-export const test = base.extend<{ api: RsvpApi }>({
+export const test = base.extend<{ api: BackendApi }>({
   page: async ({ page }, use) => {
     /* disable animations */ await use(page);
   },

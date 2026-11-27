@@ -4,7 +4,7 @@ impact: HIGH
 tags: [test-data, isolation, parallelism]
 ---
 
-Every piece of data a test creates carries the `E2E-` prefix, which marks it as synthetic suite data and makes it findable with one search. Never reuse fixed data such as “test guest” across tests: shared data is a hidden dependency. Missing isolation is the most common cause of non-deterministic failure, because state left by one test contaminates the next, the failure moves with execution order, and the failing test is rarely the one carrying the bug.
+Every piece of data a test creates carries the suite’s data prefix, here `E2E-`, which marks it as synthetic suite data and makes it findable with one search. Never reuse fixed data such as “test guest” across tests: shared data is a hidden dependency. Missing isolation is the most common cause of non-deterministic failure, because state left by one test contaminates the next, the failure moves with execution order, and the failing test is rarely the one carrying the bug.
 
 Compose each identifier from two parts: traceable context from `TestInfo`, and a cryptographically random numeric sequence that guarantees uniqueness across parallel tests and simultaneous runs.
 
@@ -22,7 +22,7 @@ function randomDigits(count: number): string {
 
 export function uid(testInfo: TestInfo): string {
   const trace = [
-    "e2e",
+    "E2E",
     testInfo.project.name,
     testInfo.testId,
     testInfo.retry,
@@ -33,7 +33,7 @@ export function uid(testInfo: TestInfo): string {
 }
 ```
 
-Four `TestInfo` fields earn their place in that identifier:
+Each `TestInfo` field has a job:
 
 - **`testId`**: stable hash of file plus title, which links an orphan record back to the test that created it
 - **`project.name`**: distinguishes the same test running across the device matrix
