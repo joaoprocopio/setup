@@ -14,6 +14,12 @@ This deliberately diverges from the official Playwright guidance, which prioriti
 
 The cost stays explicit: `getByRole` verifies for free that the element is semantically accessible, while `getByTestId` verifies nothing beyond the attribute. Accessibility verification is out of this suite’s scope and belongs to a separate effort.
 
+A test id also verifies nothing about the copy. When the text is part of what the test claims, select by test id and assert the text with `toHaveText`. Cypress’s rule of thumb decides which case applies: “If the content of the element changed would you want the test to fail?” ([Cypress best practices](https://docs.cypress.io/app/core-concepts/best-practices)). Replacing `getByText("Confirmed", { exact: true })` with `getByTestId(...)` and `toBeVisible()` silently drops the copy check.
+
+```ts
+await expect(page.getByTestId("order-status")).toHaveText("Confirmed");
+```
+
 Three rules complete the selector policy.
 
 Name test ids in kebab-case, scoped by region: `guest-form-submit`, `resume-total-guests`. The region is more than a naming habit, because nested component objects give it structure: each one searches inside its parent’s locator and nowhere else, as described in [structure-component-objects](structure-component-objects.md).

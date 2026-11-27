@@ -69,11 +69,26 @@ Seven rules govern the layer:
 - **The route component owns the URL.** A route change is then fixed in one file, for the same reason the selector moved in here.
 - **Every accessor is a method, with no getters and no fields.** The constructor stores its dependency and each accessor computes on call. That costs nothing, because a `Locator` resolves nothing until it is used, and it removes the trap where a class field initializer runs before the constructor body and sees an unassigned root.
 - **Element accessors return `Locator`; child accessors return the child component.** Assertions against a child go through its root: `expect(guests.form().root()).toBeVisible()`. Typing `.root()` is the whole price of never maintaining a custom matcher per assertion you want to use.
-- **Components act; tests verify.** No `expect` inside a component, because “the UI abstraction is stateless; the test should maintain the state and validate against it”. A component that asserts moves the proof out of the spec, and the spec stops saying what it proves.
+- **Components act; tests verify.** No verification inside a component, because “The UI Abstraction is stateless. The test should maintain the state and validate against it” ([Slack Engineering](https://slack.engineering/scaling-end-to-end-user-interface-tests/)). A component that asserts moves the proof out of the spec, and the spec stops saying what it proves. The one exception is a readiness wait, described below.
 - **A component only touches its own section.** It gets its parent’s locator and never reaches outside it.
 - **No chaining.** An async method returning `this` returns `Promise<this>`, and chaining becomes `await (await x.a()).b()`. Cypress chains because it queues commands; Playwright awaits them.
 
 Create a component on the second test that needs it, not before. A screen touched by one test keeps its locators in that test.
+
+## Readiness waits versus verification
+
+A component may wait for the state its own next step needs. Selenium allows a page object one check, “to verify that the page, and possibly critical elements on the page, were loaded correctly” ([Page object models](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/)). Fowler allows assertions that “check the invariants of a page or the application at this point, rather than specific things that a test is probing” ([PageObject](https://martinfowler.com/bliki/PageObject.html)). To tell the two apart, ask whether the spec would claim less without the line. If it would, the line is a verification and belongs in the spec.
+
+Write a readiness wait with `locator.waitFor()` when one of its states (attached, detached, visible, hidden) expresses it. When none does, a component may wait through `expect`: `toHaveValue` for a field that loads its value, `toBeEnabled` for a control enabled late, `expect.poll` for a condition outside the DOM.
+
+```ts
+async renameTo(value: string) {
+  await expect(this.name()).not.toHaveValue(""); // the saved name has loaded
+  await this.name().fill(value);
+}
+```
+
+When a component holds a verification, move it back to the spec unchanged. Rewriting it as `waitFor()` or `filter({ hasText })` to keep it in the component silently weakens it, as [wait-web-first-assertions](wait-web-first-assertions.md) lists. Playwright’s own [Page Object Model example](https://playwright.dev/docs/pom) calls `expect` inside a page-object method but states no rule either way, so it does not override this one.
 
 ## The page-wide notice
 

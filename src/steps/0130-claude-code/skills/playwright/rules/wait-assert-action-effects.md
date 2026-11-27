@@ -28,3 +28,31 @@ Four related traps, all documented upstream:
 - **Lazy content shifts layout between aim and click**: Playwright clicks a valid neighbor, with no error. Assert the state that stabilizes the page first (skeleton gone, list loaded) and treat layout shift as a product bug.
 - **Popups and downloads**: register `waitForEvent` _before_ the action that triggers it. Registered after the click, the event is lost with no way to recover it. Downloaded files are discarded when the browser context closes, so persist them with `download.saveAs()` inside the test.
 - **Dialog listeners**: with no listener Playwright dismisses dialogs on its own, but registering one, even only for logging, transfers that responsibility. Without `accept()` or `dismiss()` the action blocks until timeout.
+
+## Add a ready signal when the UI shows none
+
+When nothing on screen says the data has loaded, add a signal to the application: a test id or attribute that appears only once the data has rendered, asserted with `toBeVisible()` or `toHaveAttribute()`. A `waitForResponse` proves the request finished, not that the UI rendered its result. Fowler asks the same of any provider you build: implement “some way of indicating that it’s done … Even if only the testing code uses it, it’s worth it” ([Eradicating Non-Determinism in Tests](https://martinfowler.com/articles/nonDeterminism.html)).
+
+## Anchor every negative assertion
+
+`toHaveCount(0)`, `not.toBeVisible()`, `toBeHidden()`, `not.toBeAttached()`, and `not.toBeInViewport()` pass at once on a locator that matches nothing. A check that something did not appear passes before the application had time to show it, and any of them passes forever on a misspelled or renamed test id. The other `not.` matchers, such as `not.toHaveText()` and `not.toBeEnabled()`, fail on a missing element with “element(s) not found”. The docs do not state this split; the Playwright 1.65 source shows it. Cypress warns that negative assertions “may pass for reasons you weren’t expecting” ([Assertions](https://docs.cypress.io/app/references/assertions)).
+
+Give each such assertion two anchors:
+
+- Before it, assert the positive state that proves the action completed, so the negative check runs after the application handled the action.
+- Prove the same locator positive somewhere, in an earlier step of the test or in another test, so a wrong locator fails there.
+
+**Incorrect** (passes before the server answers, and on any typo in the test id):
+
+```ts
+await page.getByTestId("order-form-submit").click();
+await expect(page.getByTestId("order-form-error")).toBeHidden();
+```
+
+**Correct** (the effect is visible first, and the test for an invalid order proves `order-form-error` visible):
+
+```ts
+await page.getByTestId("order-form-submit").click();
+await expect(page.getByTestId("order-confirmation")).toBeVisible();
+await expect(page.getByTestId("order-form-error")).toBeHidden();
+```

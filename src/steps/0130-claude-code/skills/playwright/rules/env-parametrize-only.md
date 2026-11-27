@@ -36,3 +36,27 @@ Pointing the suite at **production** requires three prerequisites, with no excep
 1. Every created record is identifiable by the `E2E-` prefix and covered by automated cleanup.
 2. Real side effects such as emails, notifications, and charges are neutralized through dedicated test accounts and data.
 3. Cleanup runs at the end of every run, including failed runs.
+
+## Optional services are required variables
+
+A journey that needs a service some environments lack, such as a mail catcher or a payment sandbox, never skips when its variable is unset. `test.skip(!process.env.E2E_MAIL_URL)` turns a misconfigured environment into a quiet skip, and the run reads as green. pytest deprecated the same pattern in `importorskip`, because “more often than not users would rather see the unexpected error so the underlying issue can be fixed” ([pytest deprecations](https://docs.pytest.org/en/stable/deprecations.html)). Model the service one of two ways:
+
+- Add its variable to the required set, so every run needs it.
+- Read the variable in a fixture that throws when it is missing, so only the tests that name the fixture fail.
+
+```ts
+mailbox: async ({}, use) => {
+  await use(new Mailbox(requiredEnv("E2E_MAIL_URL")));
+},
+```
+
+## One run per environment at a time
+
+The suite assumes one run per environment at a time. Two runs against one environment break each other: the janitor sweeps the other run’s data mid-test, and a setup project that resets shared state resets it under the other run’s tests. Software Engineering at Google names the same hazard for shared environments: “the test might conflict with other simultaneous uses” ([chapter 14, Larger Testing](https://abseil.io/resources/swe-book/html/ch14.html)).
+
+Two runs from one checkout also share an output folder, and Playwright empties `test-results/` at the start of every run, so the second run deletes the first run’s traces ([`outputDir`](https://playwright.dev/docs/api/class-testconfig#test-config-output-dir)). Give each concurrent run its own `--output <dir>`.
+
+To run part of the suite, two flags decide what else runs:
+
+- `--project X` also runs the projects X depends on ([project dependencies](https://playwright.dev/docs/test-projects#dependencies)) and X’s teardown project. A project that depends on every browser project runs the whole suite when you select it alone.
+- `--no-deps` runs only the selected tests, with no dependency and no teardown project, so neither setup nor the janitor touches the environment. Whatever setup would have provided must already exist.
